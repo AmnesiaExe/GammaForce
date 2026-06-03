@@ -1,4 +1,4 @@
-import { WA_AGENCIES } from "@/data/agencies";
+import { getAgency, resolveAgencyId } from "@/data/waAgencies";
 import { INTELLIGENCE_SOURCES } from "@/data/intelligenceSources";
 import { AlertItem, Severity } from "@/lib/scoring";
 
@@ -129,11 +129,16 @@ export function buildExposureGraph(
       weight: 0.35 + alert.scoreBreakdown.sourceCredibility * 0.5,
     });
 
-    for (const agencyId of alert.affectedAgencyIds) {
-      const agency = WA_AGENCIES[agencyId];
+    const resolvedAgencyNodeIds: string[] = [];
+
+    for (const rawAgencyId of alert.affectedAgencyIds) {
+      const agency = getAgency(rawAgencyId);
       if (!agency) continue;
 
-      const agencyNodeId = `agency:${agencyId}`;
+      const canonicalId = resolveAgencyId(rawAgencyId);
+      const agencyNodeId = `agency:${canonicalId}`;
+      resolvedAgencyNodeIds.push(agencyNodeId);
+
       ensureNode({
         id: agencyNodeId,
         kind: "agency",
@@ -150,13 +155,16 @@ export function buildExposureGraph(
       });
     }
 
-    if (includeCoExposure && alert.affectedAgencyIds.length >= 3) {
-      const ids = alert.affectedAgencyIds;
-      for (let i = 0; i < ids.length; i++) {
-        for (let j = i + 1; j < ids.length; j++) {
+    if (includeCoExposure && resolvedAgencyNodeIds.length >= 3) {
+      const uniqueIds = [...new Set(resolvedAgencyNodeIds)];
+      for (let i = 0; i < uniqueIds.length; i++) {
+        for (let j = i + 1; j < uniqueIds.length; j++) {
+          if (!nodeMap.has(uniqueIds[i]) || !nodeMap.has(uniqueIds[j])) {
+            continue;
+          }
           links.push({
-            source: `agency:${ids[i]}`,
-            target: `agency:${ids[j]}`,
+            source: uniqueIds[i],
+            target: uniqueIds[j],
             kind: "coexposure",
             weight: 0.15 + alert.compositeScore * 0.2,
           });

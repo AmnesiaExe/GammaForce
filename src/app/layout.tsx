@@ -65,6 +65,7 @@ export default function RootLayout({
       <Providers>
         <Column
           as="body"
+          suppressHydrationWarning
           position="relative"
           fillWidth
           margin="0"

@@ -12,13 +12,40 @@ import {
 } from "@once-ui-system/core";
 import { ReactNode } from "react";
 
-export type NavSection = "overview" | "analytics" | "alerts";
+export type NavSection =
+  | "overview"
+  | "ranking"
+  | "analysis"
+  | "simulation"
+  | "executive"
+  | "analytics"
+  | "alerts";
 
 const NAV: { id: NavSection; label: string; description: string }[] = [
   {
     id: "overview",
     label: "Overview",
     description: "Command summary and queue",
+  },
+  {
+    id: "ranking",
+    label: "Agency ranking",
+    description: "Which WA agency to patch first",
+  },
+  {
+    id: "analysis",
+    label: "Threat analysis",
+    description: "25-signal domain breakdown",
+  },
+  {
+    id: "simulation",
+    label: "Attack simulation",
+    description: "Breach path for top threat",
+  },
+  {
+    id: "executive",
+    label: "Executive summary",
+    description: "Leadership posture",
   },
   {
     id: "analytics",

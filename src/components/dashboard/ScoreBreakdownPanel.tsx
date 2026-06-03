@@ -3,18 +3,26 @@
 import { Column, Flex, Heading, Line, Tag, Text } from "@once-ui-system/core";
 import { Panel } from "@/components/dashboard/Panel";
 import { AlertItem } from "@/lib/scoring";
-import { formatPercent, weightLabel } from "@/lib/prioritisation";
+import {
+  DOMAIN_LABELS,
+  DOMAIN_WEIGHTS,
+  formatPercent,
+  weightLabel,
+} from "@/lib/prioritisation";
+import { scoreColor } from "@/lib/riskColors";
 
 function FactorRow({
   label,
   weight,
   value,
   detail,
+  valueDisplay,
 }: {
   label: string;
   weight: string;
   value: number;
   detail?: string;
+  valueDisplay?: string;
 }) {
   const pct = Math.round(value * 100);
   return (
@@ -27,7 +35,7 @@ function FactorRow({
           </Text>
         </Column>
         <Text variant="heading-strong-s" className="gov-kpi-value">
-          {pct}%
+          {valueDisplay ?? `${pct}%`}
         </Text>
       </Flex>
       {detail && (
@@ -39,7 +47,7 @@ function FactorRow({
         <div
           className="gov-factor-fill"
           style={{
-            width: `${pct}%`,
+            width: `${Math.min(100, pct)}%`,
             background: "var(--brand-solid)",
           }}
         />
@@ -56,59 +64,71 @@ export function ScoreBreakdownPanel({ alert }: ScoreBreakdownPanelProps) {
   if (!alert) return null;
 
   const b = alert.scoreBreakdown;
+  const d = b.domainScores;
 
   return (
     <Panel
-      title="Prioritisation score model"
-      subtitle="Qualitative context converted to quantitative factors (cyber economics)"
+      title="Ranking score model"
+      subtitle="CyberPriority vulnerability domains + WA agency criticality (main system)"
     >
       <Column gap="16" fillWidth>
         <Column gap="8" padding="16" background="neutral-weak" radius="m" border="neutral-alpha-weak">
           <Text variant="label-default-xs" onBackground="neutral-weak">
-            Composite priority score
+            Statewide priority score
           </Text>
           <Heading variant="display-strong-s" className="gov-kpi-value">
             {formatPercent(b.priorityScore)}
           </Heading>
           <Text variant="body-default-xs" onBackground="neutral-weak">
-            Drives severity band and queue ordering
+            Vulnerability {d.final_score}/100 ({b.cyberRiskLevel}) × agency impact
           </Text>
         </Column>
 
         <FactorRow
-          label="Technical risk"
-          weight={weightLabel("technical")}
-          value={b.technical}
-          detail="CVSS, exploitability, asset exposure, business impact"
+          label="Vulnerability domains"
+          weight={weightLabel("vulnerabilityDomains")}
+          value={d.final_score / 100}
+          valueDisplay={`${d.final_score}/100`}
+          detail={`Exploitability ${d.exploitability}%, exposure ${d.exposure}%, asset ${d.asset_impact}%`}
         />
+
         <FactorRow
-          label="Source credibility"
-          weight={weightLabel("sourceCredibility")}
-          value={b.sourceCredibility}
-          detail={`${b.sourceLabel} rated ${b.sourceReputationPercent}/100 for this issue type`}
-        />
-        <FactorRow
-          label="Agency exposure"
-          weight={weightLabel("agencyExposure")}
+          label="WA agency impact"
+          weight={weightLabel("agencyImpact")}
           value={b.agencyExposure}
-          detail={`${b.agencyCount} agencies affected. Same issue across many agencies increases statewide priority.`}
+          detail={`${b.agencyCount} agencies · Tier 1 concentration ${Math.round(b.agencyImpact.tier1Share * 100)}% · peak weight ${Math.round(b.agencyImpact.maxCriticality * 100)}%`}
         />
-        <FactorRow
-          label="Context signals"
-          weight={weightLabel("contextSignals")}
-          value={b.contextSignals}
-          detail="KEV listing, active exploitation, SLA pressure, IOC volume, related incidents"
-        />
+
+        <Line background="neutral-alpha-weak" />
+
+        <Text variant="label-default-s" onBackground="neutral-weak">
+          Domain weights (vulnerability layer)
+        </Text>
+        {(Object.keys(DOMAIN_LABELS) as (keyof typeof DOMAIN_LABELS)[]).map((key) => (
+          <Flex key={key} horizontal="between" fillWidth>
+            <Text variant="body-default-xs" onBackground="neutral-weak">
+              {DOMAIN_LABELS[key]} ({Math.round(DOMAIN_WEIGHTS[key] * 100)}%)
+            </Text>
+            <Text variant="label-default-xs" style={{ color: scoreColor(d[key]) }}>
+              {d[key]}%
+            </Text>
+          </Flex>
+        ))}
 
         <Line background="neutral-alpha-weak" />
 
         <Column gap="8" fillWidth>
           <Text variant="label-default-s" onBackground="neutral-weak">
-            Affected agencies ({b.agencyCount})
+            Top agencies to action first
           </Text>
           <Flex gap="8" wrap fillWidth>
-            {b.affectedAgencyNames.map((name) => (
-              <Tag key={name} variant="neutral" size="s" label={name} />
+            {b.agencyRanking.slice(0, 5).map((entry) => (
+              <Tag
+                key={entry.agencyId}
+                variant="neutral"
+                size="s"
+                label={`#${entry.rank} ${entry.agency.name}`}
+              />
             ))}
           </Flex>
         </Column>

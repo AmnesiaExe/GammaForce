@@ -29,7 +29,7 @@ export const runAiAnalysis: AiAnalysisHandler = async ({
   await new Promise((resolve) => setTimeout(resolve, 600));
 
   return {
-    summary: `Analysis preview for ${alert.id}: ${prompt.slice(0, 80)}${prompt.length > 80 ? "..." : ""}\n\nPriority ${Math.round(alert.compositeScore * 100)}% (${alert.severity}). Agency exposure ${Math.round(alert.scoreBreakdown.agencyExposure * 100)}% across ${alert.agencyCount} agencies. Source ${alert.scoreBreakdown.sourceLabel} at ${alert.scoreBreakdown.sourceReputationPercent}/100. Technical inputs: CVSS ${alert.cvss || "N/A"}, exploitability ${alert.exploitability}/5.`,
+    summary: `Analysis preview for ${alert.id}: ${prompt.slice(0, 80)}${prompt.length > 80 ? "..." : ""}\n\nStatewide priority ${Math.round(alert.compositeScore * 100)}% (${alert.severity}). Vulnerability score ${alert.scoreBreakdown.domainScores.final_score}/100 (${alert.scoreBreakdown.cyberRiskLevel}). WA agency impact ${Math.round(alert.scoreBreakdown.agencyExposure * 100)}% across ${alert.agencyCount} agencies. Lead agency: ${alert.scoreBreakdown.agencyRanking[0]?.agency.name ?? "n/a"}. Source ${alert.scoreBreakdown.sourceLabel} at ${alert.scoreBreakdown.sourceReputationPercent}/100.`,
     recommendedActions: [
       alert.recommendedAction,
       "Validate compensating controls and document decision in case record.",

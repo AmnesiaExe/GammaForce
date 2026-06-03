@@ -7,6 +7,9 @@ export type AlertStatus =
   | "Blocked"
   | "Resolved";
 
+import type { AgencyImpactBreakdown, AgencyRankEntry } from "@/lib/agencyRanking";
+import type { CyberRiskLevel, DomainScores, ThreatExplanation } from "@/lib/cyberPriorityScoring";
+
 export interface ScoreBreakdown {
   technical: number;
   sourceCredibility: number;
@@ -18,6 +21,13 @@ export interface ScoreBreakdown {
   sourceReputationPercent: number;
   sourceLabel: string;
   affectedAgencyNames: string[];
+  /** CyberPriority 5-domain vulnerability breakdown (0–100 each). */
+  domainScores: DomainScores;
+  cyberRiskLevel: CyberRiskLevel;
+  agencyImpact: AgencyImpactBreakdown;
+  /** Per-agency urgency when multiple WA agencies share this issue. */
+  agencyRanking: AgencyRankEntry[];
+  explanation: ThreatExplanation;
 }
 
 export interface AlertItem {

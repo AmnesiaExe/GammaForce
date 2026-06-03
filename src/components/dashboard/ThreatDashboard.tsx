@@ -17,7 +17,12 @@ import { PrioritisedActions } from "@/components/dashboard/PrioritisedActions";
 import { RiskAnalytics } from "@/components/dashboard/RiskAnalytics";
 import { ScoreBreakdownPanel } from "@/components/dashboard/ScoreBreakdownPanel";
 import { WorkflowActivity } from "@/components/dashboard/WorkflowActivity";
+import { AgencyPriorityRanking } from "@/components/dashboard/AgencyPriorityRanking";
+import { ThreatAnalysisView } from "@/components/dashboard/ThreatAnalysisView";
+import { AttackSimulationView } from "@/components/dashboard/AttackSimulationView";
+import { ExecutiveSummaryView } from "@/components/dashboard/ExecutiveSummaryView";
 import { Category, matrixBand, Severity } from "@/lib/scoring";
+import { sortAlertsByPriority } from "@/lib/prioritisation";
 
 type SeverityFilter = "All" | Severity;
 type SortKey = "priority" | "agencies" | "cvss" | "received" | "sla";
@@ -72,8 +77,10 @@ export function ThreatDashboard() {
     return result.length;
   }, [severityFilter, categoryFilter, searchQuery]);
 
+  const prioritisedAlerts = useMemo(() => sortAlertsByPriority(ALERTS), []);
+
   const queueProps = {
-    items: ALERTS,
+    items: prioritisedAlerts,
     severityFilter,
     categoryFilter,
     sortKey,
@@ -103,6 +110,46 @@ export function ThreatDashboard() {
       visibleAlerts={filteredCount}
       selectedId={selectedId ?? undefined}
     >
+      {activeNav === "ranking" && (
+        <Column gap="24" fillWidth className="gov-content-layer">
+          <AgencyPriorityRanking alert={selectedAlert} items={prioritisedAlerts} />
+          <Row fillWidth gap="16" s={{ direction: "column" }}>
+            <Column flex={2} fillWidth style={{ minWidth: 0 }}>
+              <AlertQueue {...queueProps} />
+            </Column>
+            <Column flex={1} gap="16" fillWidth style={{ minWidth: "18rem" }}>
+              <ScoreBreakdownPanel alert={selectedAlert} />
+            </Column>
+          </Row>
+        </Column>
+      )}
+
+      {activeNav === "analysis" && (
+        <Column gap="24" fillWidth className="gov-content-layer">
+          <Row fillWidth gap="16" s={{ direction: "column" }}>
+            <Column flex={2} fillWidth style={{ minWidth: 0 }}>
+              <ThreatAnalysisView alert={selectedAlert} />
+            </Column>
+            <Column flex={1} gap="16" fillWidth style={{ minWidth: "18rem" }}>
+              <AlertQueue {...queueProps} />
+              <ScoreBreakdownPanel alert={selectedAlert} />
+            </Column>
+          </Row>
+        </Column>
+      )}
+
+      {activeNav === "simulation" && (
+        <Column gap="24" fillWidth className="gov-content-layer">
+          <AttackSimulationView />
+        </Column>
+      )}
+
+      {activeNav === "executive" && (
+        <Column gap="24" fillWidth className="gov-content-layer">
+          <ExecutiveSummaryView />
+        </Column>
+      )}
+
       {activeNav === "overview" && (
         <Column gap="24" fillWidth className="gov-content-layer">
           <KpiStrip />
@@ -117,7 +164,8 @@ export function ThreatDashboard() {
                 items={ALERTS}
                 highlightMatrixKey={highlightMatrixKey}
               />
-              <MultiAgencyRegister items={ALERTS} />
+              <AgencyPriorityRanking alert={selectedAlert} items={prioritisedAlerts} />
+              <MultiAgencyRegister items={prioritisedAlerts} />
               <AlertQueue {...queueProps} />
             </Column>
             <Column flex={1} gap="16" fillWidth style={{ minWidth: "18rem" }}>

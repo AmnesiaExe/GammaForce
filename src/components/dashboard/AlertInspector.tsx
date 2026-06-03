@@ -129,32 +129,32 @@ export function AlertInspector({ alert }: AlertInspectorProps) {
             Prioritisation model
           </Text>
           <FactorBar
-            label={`Technical (${weightLabel("technical")})`}
-            value={Math.round(b.technical * 100)}
+            label={`Vulnerability score (${weightLabel("vulnerabilityDomains")})`}
+            value={Math.round(b.domainScores.final_score)}
             max={100}
             color="var(--danger-solid)"
           />
           <FactorBar
-            label={`Source credibility (${weightLabel("sourceCredibility")})`}
-            value={Math.round(b.sourceCredibility * 100)}
-            max={100}
-            color="var(--warning-solid)"
-          />
-          <FactorBar
-            label={`Agency exposure (${weightLabel("agencyExposure")})`}
+            label={`WA agency impact (${weightLabel("agencyImpact")})`}
             value={Math.round(b.agencyExposure * 100)}
             max={100}
             color="var(--brand-solid)"
           />
           <FactorBar
-            label={`Context (${weightLabel("contextSignals")})`}
-            value={Math.round(b.contextSignals * 100)}
+            label="Source credibility"
+            value={Math.round(b.sourceCredibility * 100)}
             max={100}
-            color="var(--accent-solid)"
+            color="var(--warning-solid)"
           />
           <Text variant="body-default-xs" onBackground="neutral-weak">
-            Composite {formatPercent(b.priorityScore)} across {b.agencyCount} agencies
+            Statewide priority {formatPercent(b.priorityScore)} · {b.cyberRiskLevel} ·{" "}
+            {b.agencyCount} agencies
           </Text>
+          {b.agencyRanking[0] && (
+            <Text variant="body-default-xs" onBackground="brand-weak">
+              Patch #{b.agencyRanking[0].rank} first: {b.agencyRanking[0].agency.name}
+            </Text>
+          )}
         </Column>
 
         <Column gap="12" fillWidth>

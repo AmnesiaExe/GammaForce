@@ -5,7 +5,7 @@ export const OPS_METRICS = {
   slaAtRisk: 3,
   kevOpen: 4,
   internetExposed: 7,
-  agenciesAffected: 2,
+  agenciesAffected: 140,
   autoEnrichedPercent: 68,
 } as const;
 

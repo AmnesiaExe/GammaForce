@@ -18,7 +18,7 @@ export function KpiStrip() {
     { label: "SLA at risk", value: String(OPS_METRICS.slaAtRisk), sub: "Requires action within 24h" },
     { label: "KEV catalogue matches", value: String(OPS_METRICS.kevOpen), sub: "Known exploited vulnerabilities" },
     { label: "Internet-exposed assets", value: String(OPS_METRICS.internetExposed), sub: "In active assessment scope" },
-    { label: "Agencies in scope", value: String(OPS_METRICS.agenciesAffected), sub: "Cross-agency correlation" },
+    { label: "WA agencies in register", value: String(OPS_METRICS.agenciesAffected), sub: "Full WA Government agency list" },
     { label: "Auto-enriched alerts", value: `${OPS_METRICS.autoEnrichedPercent}%`, sub: "Normalised from source feeds" },
   ];
 

@@ -225,3 +225,19 @@ body {
 .gov-chart-surface .recharts-layer path.recharts-area-area {
   opacity: 0.35;
 }
+
+.gov-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.gov-status-dot--danger {
+  background: var(--danger-solid);
+}
+
+.gov-status-dot--success {
+  background: var(--success-solid);
+}
