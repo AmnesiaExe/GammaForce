@@ -1,4 +1,4 @@
-/** WA state agency register — sourced from wa.gov.au/agency (140 entities). */
+/** WA state agency register  sourced from wa.gov.au/agency (140 entities). */
 export type AgencyTier = 1 | 2 | 3;
 
 export interface AgencyProfile {

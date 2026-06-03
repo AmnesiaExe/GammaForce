@@ -94,7 +94,7 @@ def score_vulnerability(v: dict) -> dict:
     then aggregate into a final 0-100 priority score.
     """
 
-    # Domain A — Exploitability  (weight 0.30)
+    # Domain A  Exploitability  (weight 0.30)
     exploitability = (
         (v["cvss"] / 10) * 0.35
         + v["exploit_available"] * 0.20
@@ -104,7 +104,7 @@ def score_vulnerability(v: dict) -> dict:
         + (1 - v["user_interaction"]) * 0.05
     )
 
-    # Domain B — Exposure  (weight 0.25)
+    # Domain B  Exposure  (weight 0.25)
     exposure = (
         v["internet_facing"] * 0.35
         + v["public_service"] * 0.20
@@ -113,7 +113,7 @@ def score_vulnerability(v: dict) -> dict:
         + v["remote_access"] * 0.15
     )
 
-    # Domain C — Asset Impact  (weight 0.25)
+    # Domain C  Asset Impact  (weight 0.25)
     asset_impact = (
         v["critical_service"] * 0.30
         + v["data_sensitivity"] * 0.25
@@ -122,7 +122,7 @@ def score_vulnerability(v: dict) -> dict:
         + v["uptime_importance"] * 0.10
     )
 
-    # Domain D — Intelligence Confidence  (weight 0.15)
+    # Domain D  Intelligence Confidence  (weight 0.15)
     intel_confidence = (
         v["asd_match"] * 0.30
         + v["vendor_advisory"] * 0.10
@@ -131,7 +131,7 @@ def score_vulnerability(v: dict) -> dict:
         + v["recency"] * 0.15
     )
 
-    # Domain E — Remediation Context  (weight 0.05)
+    # Domain E  Remediation Context  (weight 0.05)
     #   Higher patch/workaround availability = slightly lower urgency
     remediation = (
         v["patch_available"] * 0.40
@@ -194,7 +194,7 @@ def explain(v: dict, scores: dict) -> dict:
 
     mitigations = []
     if v["patch_available"]:
-        mitigations.append("Patch is available — immediate deployment recommended")
+        mitigations.append("Patch is available  immediate deployment recommended")
     if v["workaround_exists"]:
         mitigations.append("Temporary workaround available while patching is staged")
 

@@ -6,6 +6,7 @@ import { Panel } from "@/components/dashboard/Panel";
 import { WA_AGENCY_COUNT } from "@/data/waAgencies";
 import { AlertItem } from "@/lib/scoring";
 import { formatPercent } from "@/lib/prioritisation";
+import { ScoreBar } from "@/components/dashboard/ScoreBar";
 import { scoreColor } from "@/lib/riskColors";
 
 interface AgencyPriorityRankingProps {
@@ -24,83 +25,50 @@ export function AgencyPriorityRanking({ alert, items }: AgencyPriorityRankingPro
 
   const active = alert ?? topMultiAgency;
   const ranking = active?.scoreBreakdown.agencyRanking ?? [];
-  const impact = active?.scoreBreakdown.agencyImpact;
+  const threatScore = active?.scoreBreakdown.domainScores.final_score ?? 0;
 
   return (
     <Panel
-      title="WA agency priority ranking"
-      subtitle={`When multiple of ${WA_AGENCY_COUNT} WA state agencies share one vulnerability, urgency = vulnerability score × agency criticality × tier`}
+      title="Who to contact first (verified agency impact)"
+      subtitle={`Each agency has a verified impact weight; contact priority = threat score (${threatScore}/100) × that weight`}
     >
       {!active ? (
         <Text variant="body-default-s" onBackground="neutral-weak">
-          Select an alert to see per-agency ranking.
+          Open an alert from the queue to see agency order.
         </Text>
       ) : (
         <Column gap="16" fillWidth>
-          <Column gap="8" padding="12" background="neutral-weak" radius="m" border="neutral-alpha-weak">
-            <Text variant="label-default-xs" onBackground="neutral-weak">
-              Active issue
-            </Text>
-            <Text variant="label-strong-s">{active.title}</Text>
-            <Flex gap="8" wrap>
-              <Tag
-                variant="danger"
-                size="s"
-                label={`Vuln ${active.scoreBreakdown.domainScores.final_score}/100`}
-              />
-              <Tag
-                variant="brand"
-                size="s"
-                label={`Statewide ${formatPercent(active.compositeScore)}`}
-              />
-              <Tag variant="neutral" size="s" label={`${active.agencyCount} agencies`} />
-            </Flex>
-          </Column>
-
-          {impact && (
-            <Flex gap="12" wrap fillWidth>
-              {[
-                { label: "Breadth", value: formatPercent(impact.breadth) },
-                { label: "Avg criticality", value: formatPercent(impact.weightedCriticality) },
-                { label: "Peak agency weight", value: formatPercent(impact.maxCriticality) },
-                { label: "Tier 1 share", value: `${Math.round(impact.tier1Share * 100)}%` },
-              ].map((m) => (
-                <Column key={m.label} gap="4" padding="12" background="surface" radius="m" border="neutral-alpha-weak" style={{ minWidth: "7rem", flex: 1 }}>
-                  <Text variant="label-default-xs" onBackground="neutral-weak">
-                    {m.label}
-                  </Text>
-                  <Heading variant="heading-strong-s" className="gov-kpi-value">
-                    {m.value}
-                  </Heading>
-                </Column>
-              ))}
-            </Flex>
-          )}
+          <Text variant="body-default-s" onBackground="neutral-weak">
+            Same alert, different priority per agency. Tier 1 agencies (for example Health) rank
+            higher because verified statewide impact is higher.
+          </Text>
 
           <Column gap="8" fillWidth>
-            <Text variant="label-default-s" onBackground="neutral-weak">
-              Response order (highest urgency first)
-            </Text>
             {ranking.length === 0 ? (
               <Text variant="body-default-s" onBackground="neutral-weak">
-                Single-agency issue — no cross-agency ordering required.
+                Only one agency on this threat.
               </Text>
             ) : (
               ranking.map((entry) => (
                 <Column key={entry.agencyId} gap="8" fillWidth>
                   <Flex horizontal="between" vertical="center" wrap gap="8" fillWidth>
-                    <Flex gap="12" vertical="center">
-                      <Heading variant="heading-strong-m" className="gov-kpi-value" style={{ minWidth: "2rem" }}>
-                        #{entry.rank}
-                      </Heading>
-                      <Column gap="4">
-                        <Text variant="label-strong-s">{entry.agency.name}</Text>
-                        <Text variant="body-default-xs" onBackground="neutral-weak">
-                          {entry.rationale}
-                        </Text>
-                      </Column>
-                    </Flex>
+                    <Column gap="4">
+                      <Flex gap="12" vertical="center">
+                        <Heading variant="heading-strong-m" className="gov-kpi-value">
+                          #{entry.rank}
+                        </Heading>
+                        <Column gap="4">
+                          <Text variant="label-strong-s">{entry.agency.name}</Text>
+                          <Text variant="body-default-xs" onBackground="neutral-weak">
+                            Verified impact {Math.round(entry.agency.criticalityWeight * 100)}%
+                          </Text>
+                        </Column>
+                      </Flex>
+                    </Column>
                     <Column gap="4" horizontal="end">
+                      <Text variant="label-default-xs" onBackground="neutral-weak">
+                        Priority
+                      </Text>
                       <Heading
                         variant="heading-strong-m"
                         className="gov-kpi-value"
@@ -108,20 +76,9 @@ export function AgencyPriorityRanking({ alert, items }: AgencyPriorityRankingPro
                       >
                         {entry.urgencyPercent}
                       </Heading>
-                      <Text variant="label-default-xs" onBackground="neutral-weak">
-                        urgency index
-                      </Text>
                     </Column>
                   </Flex>
-                  <div className="gov-factor-track">
-                    <div
-                      className="gov-factor-fill"
-                      style={{
-                        width: `${Math.min(100, entry.urgencyPercent)}%`,
-                        background: scoreColor(entry.urgencyPercent),
-                      }}
-                    />
-                  </div>
+                  <ScoreBar value={entry.urgencyPercent} />
                   {entry.rank < ranking.length - 1 && (
                     <Line background="neutral-alpha-weak" />
                   )}
@@ -129,6 +86,11 @@ export function AgencyPriorityRanking({ alert, items }: AgencyPriorityRankingPro
               ))
             )}
           </Column>
+
+          <Text variant="body-default-xs" onBackground="neutral-weak">
+            Across {WA_AGENCY_COUNT} WA Government agencies. Statewide priority for this threat{" "}
+            {formatPercent(active.compositeScore)}
+          </Text>
         </Column>
       )}
     </Panel>

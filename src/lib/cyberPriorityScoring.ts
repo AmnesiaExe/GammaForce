@@ -172,7 +172,7 @@ export function explainThreat(
 
   const mitigations: string[] = [];
   if (v.patch_available) {
-    mitigations.push("Patch is available — immediate deployment recommended");
+    mitigations.push("Patch is available  immediate deployment recommended");
   }
   if (v.workaround_exists) {
     mitigations.push(

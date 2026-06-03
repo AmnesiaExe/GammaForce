@@ -1,4 +1,4 @@
-/** @deprecated Import from @/data/waAgencies — kept for backward compatibility. */
+/** @deprecated Import from @/data/waAgencies  kept for backward compatibility. */
 export {
   type AgencyProfile,
   type AgencyTier,

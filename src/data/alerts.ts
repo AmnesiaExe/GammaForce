@@ -2,7 +2,7 @@ import { buildPrioritisedAlert } from "@/lib/prioritisation";
 
 export const ALERTS = [
   buildPrioritisedAlert({
-    id: "VUL-2025-0142",
+    id: "SOC-202606030001",
     title: "Remote code execution in perimeter VPN appliance firmware",
     category: "Vulnerability",
     source: "ACSC Advisory / Vendor PSIRT",
@@ -34,7 +34,7 @@ export const ALERTS = [
       "Active exploitation observed in sector peers. Emergency CAB slot requested for 11:00 AWST.",
   }),
   buildPrioritisedAlert({
-    id: "VUL-2025-0138",
+    id: "SOC-202606030002",
     title: "Microsoft Exchange SSRF leading to privilege escalation (CVE-2025-29824)",
     category: "Vulnerability",
     source: "CISA KEV Catalogue",
@@ -59,7 +59,7 @@ export const ALERTS = [
     analystNotes: "Hunting query pack deployed to SIEM. Awaiting patch package from vendor CDN mirror.",
   }),
   buildPrioritisedAlert({
-    id: "TI-2025-0091",
+    id: "SOC-202606030003",
     title: "Targeted spear-phishing campaign impersonating WA Treasury notifications",
     category: "Threat Intelligence",
     source: "WA Cyber Security Unit",
@@ -84,7 +84,7 @@ export const ALERTS = [
     analystNotes: "Three users reported suspicious clicks. Containment rules staged in proofing mode.",
   }),
   buildPrioritisedAlert({
-    id: "VUL-2025-0131",
+    id: "SOC-202606030004",
     title: "Citrix NetScaler memory overflow (CVE-2024-21893)",
     category: "Vulnerability",
     source: "CISA KEV Catalogue",
@@ -109,7 +109,7 @@ export const ALERTS = [
     analystNotes: "Hotfix blocked pending vendor support case #88421. WAF compensating control active.",
   }),
   buildPrioritisedAlert({
-    id: "TI-2025-0088",
+    id: "SOC-202606030005",
     title: "Ransomware affiliate scanning for exposed RDP on Australian government ranges",
     category: "Threat Intelligence",
     source: "AusCERT Member Advisory",
@@ -154,7 +154,7 @@ export const ALERTS = [
       "Same threat pattern reported across 10 agencies. Statewide coordination call scheduled. Shodan sweep in progress.",
   }),
   buildPrioritisedAlert({
-    id: "VUL-2025-0124",
+    id: "SOC-202606030006",
     title: "Apache Tomcat path traversal enabling arbitrary file read",
     category: "Vulnerability",
     source: "NVD / Vendor bulletin",
@@ -179,7 +179,7 @@ export const ALERTS = [
     analystNotes: "Patch tested in UAT. Production rollout window booked for Thursday 22:00 AWST.",
   }),
   buildPrioritisedAlert({
-    id: "VUL-2025-0119",
+    id: "SOC-202606030007",
     title: "Google Chrome type confusion in V8 (in-the-wild exploitation reported)",
     category: "Vulnerability",
     source: "Chrome Stable Release Notes",
@@ -216,7 +216,7 @@ export const ALERTS = [
       "Same CVE confirmed on 10 agencies. MDM deployment 62% complete. Residual fleet targeted by end of shift.",
   }),
   buildPrioritisedAlert({
-    id: "TI-2025-0082",
+    id: "SOC-202606030008",
     title: "Credential stuffing activity against agency SSO portal",
     category: "Threat Intelligence",
     source: "SIEM correlation rule",
@@ -241,7 +241,7 @@ export const ALERTS = [
     analystNotes: "847 failed auth events from 12 ASNs. Step-up MFA policy draft ready for approval.",
   }),
   buildPrioritisedAlert({
-    id: "VUL-2025-0112",
+    id: "SOC-202606030009",
     title: "VMware vCenter authentication bypass (CVE-2025-41225)",
     category: "Vulnerability",
     source: "Vendor advisory",
@@ -266,7 +266,7 @@ export const ALERTS = [
     analystNotes: "Awaiting infrastructure owner confirmation for maintenance slot.",
   }),
   buildPrioritisedAlert({
-    id: "VUL-2025-0105",
+    id: "SOC-202606030010",
     title: "OpenSSL buffer over-read in TLS handshake processing",
     category: "Vulnerability",
     source: "OpenSSL Security Advisory",
@@ -291,7 +291,7 @@ export const ALERTS = [
     analystNotes: "Closed after container base image refresh. Verification scan clean.",
   }),
   buildPrioritisedAlert({
-    id: "TI-2025-0076",
+    id: "SOC-202606030011",
     title: "Supply-chain compromise indicators in widely used npm utility package",
     category: "Threat Intelligence",
     source: "Open-source threat feed",
@@ -316,7 +316,7 @@ export const ALERTS = [
     analystNotes: "SCA scan running across 14 repos. No malicious publish confirmed for agency forks yet.",
   }),
   buildPrioritisedAlert({
-    id: "VUL-2025-0098",
+    id: "SOC-202606030012",
     title: "FortiOS SSL VPN session fixation vulnerability",
     category: "Vulnerability",
     source: "Fortinet PSIRT",

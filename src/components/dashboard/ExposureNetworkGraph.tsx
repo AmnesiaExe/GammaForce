@@ -292,9 +292,9 @@ export function ExposureNetworkGraph({
                 return `${node.label}\n${node.severity} · ${Math.round((node.priorityScore ?? 0) * 100)}% · ${node.agencyCount} agencies`;
               }
               if (node.kind === "agency") {
-                return `${node.label}\nTier ${node.tier ?? "—"}`;
+                return `${node.label}\nTier ${node.tier ?? "n/a"}`;
               }
-              return `${node.label}\nSource reputation ${node.sourceReputation ?? "—"}/100`;
+              return `${node.label}\nSource reputation ${node.sourceReputation ?? "n/a"}/100`;
             }}
             linkDirectionalParticles={(link) => {
               const l = link as ExposureLink;

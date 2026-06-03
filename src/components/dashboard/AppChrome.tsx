@@ -12,68 +12,47 @@ import {
 } from "@once-ui-system/core";
 import { ReactNode } from "react";
 
-export type NavSection =
-  | "overview"
-  | "ranking"
-  | "analysis"
-  | "simulation"
-  | "executive"
-  | "analytics"
-  | "alerts";
+export type NavSection = "triage" | "raw" | "agencies" | "analysis" | "executive";
 
 const NAV: { id: NavSection; label: string; description: string }[] = [
   {
-    id: "overview",
-    label: "Overview",
-    description: "Command summary and queue",
+    id: "triage",
+    label: "AI Triage",
+    description: "Live AI operator board",
   },
   {
-    id: "ranking",
-    label: "Agency ranking",
-    description: "Which WA agency to patch first",
+    id: "raw",
+    label: "Ingest log",
+    description: "Live feed tail",
+  },
+  {
+    id: "agencies",
+    label: "WA agencies",
+    description: "Agency names and tiers",
   },
   {
     id: "analysis",
-    label: "Threat analysis",
-    description: "25-signal domain breakdown",
-  },
-  {
-    id: "simulation",
-    label: "Attack simulation",
-    description: "Breach path for top threat",
+    label: "Overview",
+    description: "Priority snapshot and map",
   },
   {
     id: "executive",
     label: "Executive summary",
     description: "Leadership posture",
   },
-  {
-    id: "analytics",
-    label: "Risk analytics",
-    description: "Trends and prioritisation views",
-  },
-  {
-    id: "alerts",
-    label: "Alert management",
-    description: "Triage and response workflow",
-  },
 ];
 
 interface AppChromeProps {
   activeNav: NavSection;
   onNavChange: (nav: NavSection) => void;
-  totalAlerts: number;
-  visibleAlerts: number;
-  selectedId?: string;
+  metaLine?: string;
   children: ReactNode;
 }
 
 export function AppChrome({
   activeNav,
   onNavChange,
-  totalAlerts,
-  visibleAlerts,
-  selectedId,
+  metaLine,
   children,
 }: AppChromeProps) {
   return (
@@ -89,9 +68,9 @@ export function AppChrome({
           <Text variant="label-default-xs" onBackground="brand-weak">
             Western Australia Government
           </Text>
-          <Heading variant="heading-strong-m">GammaForce SOC</Heading>
+          <Heading variant="heading-strong-m">WASOC Prioritisation</Heading>
           <Text variant="body-default-xs" onBackground="neutral-weak">
-            Threat and vulnerability prioritisation
+            WA Government cyber triage
           </Text>
         </Column>
 
@@ -161,22 +140,23 @@ export function AppChrome({
         >
           <Column gap="4">
             <Text variant="label-default-xs" onBackground="neutral-weak">
-              Security Operations Centre
+              Office of Digital Government · WA Cyber Security Unit
             </Text>
             <Heading variant="heading-strong-l">
-              Prioritised threat and vulnerability register
+              Cyber threat and vulnerability prioritisation
             </Heading>
           </Column>
 
           <Column gap="8" horizontal="end">
             <Text variant="label-default-xs" onBackground="neutral-weak">
-              Last refreshed
+              Live analysis
             </Text>
-            <Text variant="body-default-s">03 Jun 2025, 09:30 AWST</Text>
-            <Text variant="body-default-xs" onBackground="neutral-weak">
-              {totalAlerts} registered | {visibleAlerts} in current view
-              {selectedId ? ` | Selected ${selectedId}` : ""}
-            </Text>
+            <Text variant="body-default-s">03 Jun 2026, 09:30 AWST</Text>
+            {metaLine && (
+              <Text variant="body-default-xs" onBackground="neutral-weak">
+                {metaLine}
+              </Text>
+            )}
           </Column>
         </Flex>
 

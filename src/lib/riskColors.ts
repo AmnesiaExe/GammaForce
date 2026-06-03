@@ -21,3 +21,11 @@ export function scoreColor(score: number): string {
   if (score >= 50) return "var(--brand-solid)";
   return "var(--success-solid)";
 }
+
+/** Solid hex for SVG strokes and bar fills (CSS variables often fail on SVG). */
+export function scoreColorHex(score: number): string {
+  if (score >= 85) return "#ef4444";
+  if (score >= 70) return "#f59e0b";
+  if (score >= 50) return "#38bdf8";
+  return "#22c55e";
+}

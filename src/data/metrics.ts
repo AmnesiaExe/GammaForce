@@ -42,7 +42,7 @@ export const ACTIVITY_FEED = [
   {
     time: "09:12 AWST",
     label: "Correlation rule fired",
-    description: "Credential stuffing pattern linked to TI-2025-0082.",
+    description: "Credential stuffing pattern linked to SOC-202606030008.",
     state: "active" as const,
   },
   {
@@ -54,7 +54,7 @@ export const ACTIVITY_FEED = [
   {
     time: "08:30 AWST",
     label: "SLA warning",
-    description: "VUL-2025-0142 response window under 4 hours.",
+    description: "SOC-202606030001 response window under 4 hours.",
     state: "danger" as const,
   },
   {

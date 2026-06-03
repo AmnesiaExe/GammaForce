@@ -72,7 +72,7 @@ export function ExecutiveSummaryView() {
         .slice(0, 4)
         .map((a, i) => ({
           num: String(i + 1).padStart(2, "0"),
-          text: `${a.title} — ${a.scoreBreakdown.agencyRanking[0]?.agency.name ?? "WA agencies"} first.`,
+          text: `${a.title}. Contact ${a.scoreBreakdown.agencyRanking[0]?.agency.name ?? "WA agencies"} first.`,
           window: `${a.scoreBreakdown.cyberRiskLevel} · ${a.recommendedAction.slice(0, 80)}…`,
         })),
     [],

@@ -54,7 +54,7 @@ export function MultiAgencyRegister({ items }: MultiAgencyRegisterProps) {
                   Priority {formatPercent(item.compositeScore)}
                 </Text>
                 <Text variant="body-default-xs" onBackground="brand-weak">
-                  Lead agency: {item.scoreBreakdown.agencyRanking[0]?.agency.name ?? "—"}
+                  Lead agency: {item.scoreBreakdown.agencyRanking[0]?.agency.name ?? "n/a"}
                 </Text>
               </Flex>
               {index < ranked.length - 1 && (

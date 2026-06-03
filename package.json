@@ -4,7 +4,7 @@
   "private": true,
   "description": "WA Government cyber threat and vulnerability prioritisation dashboard",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
