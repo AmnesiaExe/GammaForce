@@ -1,0 +1,28 @@
+{
+  "name": "gammaforce",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WA Government cyber threat and vulnerability prioritisation dashboard",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@once-ui-system/core": "^1.7.9",
+    "classnames": "^2.5.1",
+    "next": "^16.0.10",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-force-graph-2d": "^1.29.1",
+    "sass": "^1.86.3",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.30",
+    "@types/react": "^19.2.4",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.8.3"
+  }
+}
