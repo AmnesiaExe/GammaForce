@@ -94,12 +94,15 @@ export function scoreVulnerability(v: VulnerabilitySignals): DomainScores {
     v.version_prevalence * 0.15 +
     v.historical_exploitation * 0.15;
 
+  // Higher remediation = easier to fix → slightly lower urgency (invert for fusion only).
+  const remediationUrgency = 1 - remediation;
+
   const final =
     exploitability * DOMAIN_WEIGHTS.exploitability +
     exposure * DOMAIN_WEIGHTS.exposure +
     asset_impact * DOMAIN_WEIGHTS.asset_impact +
     intel_confidence * DOMAIN_WEIGHTS.intel_confidence +
-    remediation * DOMAIN_WEIGHTS.remediation;
+    remediationUrgency * DOMAIN_WEIGHTS.remediation;
 
   return {
     exploitability: round1(exploitability * 100),

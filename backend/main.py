@@ -140,12 +140,14 @@ def score_vulnerability(v: dict) -> dict:
         + v["historical_exploitation"] * 0.15
     )
 
+    remediation_urgency = 1 - remediation
+
     final = (
         exploitability * 0.30
         + exposure * 0.25
         + asset_impact * 0.25
         + intel_confidence * 0.15
-        + remediation * 0.05
+        + remediation_urgency * 0.05
     )
 
     return {

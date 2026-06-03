@@ -59,10 +59,11 @@ export function calculatePriorityScore(
     alert.sourceKey,
     alert.category,
   );
+  const agencyImpact = calculateAgencyImpact(alert.affectedAgencyIds);
 
   const signals = alertToSignals({
     ...alert,
-    agencyCount: alert.affectedAgencyIds.length,
+    agencyCount: agencyImpact.agencyCount,
     sourceCredibility: sourceCredibilityEarly,
     sourceReputationPercent: sourceMeta
       ? alert.category === "Vulnerability"
@@ -73,7 +74,6 @@ export function calculatePriorityScore(
 
   const domainScores = scoreVulnerability(signals);
   const sourceCredibility = sourceCredibilityEarly;
-  const agencyImpact = calculateAgencyImpact(alert.affectedAgencyIds);
   const priorityScore = combinePriorityScore(domainScores, agencyImpact);
 
   const profiles = alert.affectedAgencyIds

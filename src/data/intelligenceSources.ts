@@ -85,7 +85,7 @@ export function sourceCredibilityForCategory(
   category: Category,
 ): number {
   const source = INTELLIGENCE_SOURCES[sourceKey];
-  if (!source) return 50;
+  if (!source) return 0.5;
   const raw =
     category === "Vulnerability"
       ? source.reputation.vulnerability

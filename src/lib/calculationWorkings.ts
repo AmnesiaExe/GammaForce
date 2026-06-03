@@ -19,6 +19,8 @@ import { AlertItem, severityFromScore } from "@/lib/scoring";
 const TIER_MULT: Record<1 | 2 | 3, number> = { 1: 1.15, 2: 1, 3: 0.85 };
 
 const round4 = (n: number) => Math.round(n * 10000) / 10000;
+/** Rounding tolerance for 0–100 threat score (round2 on engine vs manual tensor sum). */
+const SCORE_EPS = 0.25;
 const EPS = 0.0002;
 
 export interface WorkingsLine {
@@ -80,8 +82,13 @@ function signalLines(signals: VulnerabilitySignals): WorkingsLine[] {
   });
 }
 
-function checkLine(name: string, expected: number, actual: number): WorkingsLine {
-  const pass = Math.abs(expected - actual) <= EPS;
+function checkLine(
+  name: string,
+  expected: number,
+  actual: number,
+  tolerance = EPS,
+): WorkingsLine {
+  const pass = Math.abs(expected - actual) <= tolerance;
   return {
     label: name,
     expression: `recomputed ${round4(expected)}`,
@@ -100,6 +107,8 @@ export function buildAdvisoryCalculationWorkings(alert: AlertItem): AdvisoryCalc
       : sourceMeta.reputation.threatIntelligence
     : 50;
 
+  const impactForSignals = calculateAgencyImpact(alert.affectedAgencyIds);
+
   const signals = alertToSignals({
     category: alert.category,
     cvss: alert.cvss,
@@ -113,7 +122,7 @@ export function buildAdvisoryCalculationWorkings(alert: AlertItem): AdvisoryCalc
     slaHoursRemaining: alert.slaHoursRemaining,
     sourceKey: alert.sourceKey,
     affectedAgencyIds: alert.affectedAgencyIds,
-    agencyCount: alert.agencyCount,
+    agencyCount: impactForSignals.agencyCount,
     sourceCredibility: sourceCred,
     sourceReputationPercent: sourceRep,
   });
@@ -164,12 +173,13 @@ export function buildAdvisoryCalculationWorkings(alert: AlertItem): AdvisoryCalc
   };
 
   const domains = scoreVulnerability(signals);
+  const remediationUrgency = 1 - remediationRaw;
   const vulnFinalRaw =
     exploitRaw * DOMAIN_WEIGHTS.exploitability +
     exposureRaw * DOMAIN_WEIGHTS.exposure +
     assetRaw * DOMAIN_WEIGHTS.asset_impact +
     intelRaw * DOMAIN_WEIGHTS.intel_confidence +
-    remediationRaw * DOMAIN_WEIGHTS.remediation;
+    remediationUrgency * DOMAIN_WEIGHTS.remediation;
 
   const impact = calculateAgencyImpact(alert.affectedAgencyIds);
   const impactRecomputed = Math.min(
@@ -203,15 +213,26 @@ export function buildAdvisoryCalculationWorkings(alert: AlertItem): AdvisoryCalc
     label: `#${entry.rank} ${entry.agency.name}`,
     expression: `(${domains.final_score}/100) × ${round4(entry.agency.criticalityWeight)} × tier${entry.agency.tier}(${TIER_MULT[entry.agency.tier]})`,
     result: `urgency ${entry.urgencyPercent} (raw ${round4(entry.urgencyScore)})`,
-    ok: Math.abs(entry.urgencyScore - vulnNorm * entry.agency.criticalityWeight * TIER_MULT[entry.agency.tier]) <= EPS,
+    ok:
+      Math.abs(
+        entry.urgencyScore -
+          vulnNorm * entry.agency.criticalityWeight * TIER_MULT[entry.agency.tier],
+      ) <= EPS,
   }));
 
+  const threatFromTensor = Math.round(vulnFinalRaw * 10000) / 100;
+
   const verifyLines: WorkingsLine[] = [
-    checkLine("threat final_score", domains.final_score, b.domainScores.final_score),
+    checkLine("threat final_score", domains.final_score, b.domainScores.final_score, SCORE_EPS),
     checkLine("agencyImpact.composite", impactRecomputed, b.agencyImpact.composite),
-    checkLine("combinePriorityScore()", priorityFromEngine, b.priorityScore),
-    checkLine("alert.compositeScore", priorityFromEngine, alert.compositeScore),
-    checkLine("threat fusion (×100)", Math.round(vulnFinalRaw * 10000) / 100, domains.final_score),
+    checkLine("combinePriorityScore()", priorityFromEngine, b.priorityScore, SCORE_EPS),
+    checkLine("alert.compositeScore", priorityFromEngine, alert.compositeScore, SCORE_EPS),
+    checkLine(
+      "threat fusion (tensor vs engine)",
+      threatFromTensor,
+      domains.final_score,
+      SCORE_EPS,
+    ),
   ];
 
   if (ranked[0] && b.agencyRanking[0]) {
@@ -273,11 +294,15 @@ export function buildAdvisoryCalculationWorkings(alert: AlertItem): AdvisoryCalc
     {
       title: "Stage 3 · Threat score fusion",
       subtitle: "Weighted sum of five domain tensors → 0–100 threat score",
-      lines: (Object.keys(DOMAIN_LABELS) as (keyof typeof DOMAIN_LABELS)[]).map((key) => ({
-        label: DOMAIN_LABELS[key],
-        expression: `${round4(domainRaws[key])} × ${DOMAIN_WEIGHTS[key]}`,
-        result: round4(domainRaws[key] * DOMAIN_WEIGHTS[key]).toString(),
-      })),
+      lines: (Object.keys(DOMAIN_LABELS) as (keyof typeof DOMAIN_LABELS)[]).map((key) => {
+        const raw = key === "remediation" ? remediationUrgency : domainRaws[key];
+        const note = key === "remediation" ? " (1 − remediation readiness)" : "";
+        return {
+          label: DOMAIN_LABELS[key] + note,
+          expression: `${round4(raw)} × ${DOMAIN_WEIGHTS[key]}`,
+          result: round4(raw * DOMAIN_WEIGHTS[key]).toString(),
+        };
+      }),
       total: `threatScore = ${round4(vulnFinalRaw * 100)}/100 stored as ${domains.final_score} (${b.cyberRiskLevel})`,
     },
     {

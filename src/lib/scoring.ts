@@ -59,10 +59,12 @@ export interface AlertItem {
   analystNotes: string;
 }
 
+/** Fused priority (0–1). Bands align with cyberRiskLevel (85 / 70 / 50 on 0–100). */
 export function severityFromScore(score: number): Severity {
-  if (score >= 0.82) return "Critical";
-  if (score >= 0.62) return "High";
-  if (score >= 0.4) return "Medium";
+  const pct = score * 100;
+  if (pct >= 85) return "Critical";
+  if (pct >= 70) return "High";
+  if (pct >= 50) return "Medium";
   return "Low";
 }
 
