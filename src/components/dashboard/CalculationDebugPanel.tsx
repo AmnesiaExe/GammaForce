@@ -97,10 +97,58 @@ export function CalculationDebugPanel({ alert }: CalculationDebugPanelProps) {
                     </Text>
                   </div>
                 ))}
-                {section.total && (
-                  <Text variant="label-default-xs" className="gov-calc-debug-total">
-                    → {section.total}
-                  </Text>
+                {(section.footer || section.total) && (
+                  <div className="gov-calc-debug-footer gov-calc-final-box">
+                    {section.footer?.headline && (
+                      <Text variant="label-strong-s" className="gov-calc-debug-footer-headline">
+                        {section.footer.headline}
+                      </Text>
+                    )}
+                    {section.footer ? (
+                      <Column gap="8" fillWidth>
+                        <Column gap="2" fillWidth>
+                          <Text variant="label-default-xs" className="gov-calc-debug-footer-label">
+                            How we got it
+                          </Text>
+                          <Text variant="body-default-xs" onBackground="neutral-weak">
+                            {section.footer.got}
+                          </Text>
+                        </Column>
+                        <Column gap="8" fillWidth>
+                          <Text variant="label-default-xs" className="gov-calc-debug-footer-label">
+                            How it&apos;s used (actual values)
+                          </Text>
+                          {section.footer.usageLines.map((line) => (
+                            <div
+                              key={`${section.title}-usage-${line.label}`}
+                              className="gov-calc-debug-row gov-calc-debug-row--usage"
+                            >
+                              <Text variant="label-default-xs" className="gov-calc-debug-label">
+                                {line.label}
+                              </Text>
+                              <Text variant="body-default-xs" className="gov-calc-debug-expr">
+                                {line.expression}
+                              </Text>
+                              <Text variant="body-default-xs" className="gov-calc-debug-result">
+                                {line.result}
+                              </Text>
+                            </div>
+                          ))}
+                        </Column>
+                        {section.footer.usedIn && (
+                          <Text variant="body-default-xs" onBackground="neutral-weak">
+                            {section.footer.usedIn}
+                          </Text>
+                        )}
+                      </Column>
+                    ) : (
+                      section.total && (
+                        <Text variant="body-default-xs" onBackground="neutral-weak">
+                          {section.total}
+                        </Text>
+                      )
+                    )}
+                  </div>
                 )}
               </Column>
             ))}

@@ -15,6 +15,7 @@ import { CalculationDebugPanel } from "@/components/dashboard/CalculationDebugPa
 import { PatternLinksPanel } from "@/components/dashboard/PatternLinksPanel";
 import { Panel } from "@/components/dashboard/Panel";
 import { ThreatProgressionTimeline } from "@/components/dashboard/ThreatProgressionTimeline";
+import { EisenhowerMatrix } from "@/components/dashboard/EisenhowerMatrix";
 import { ScoreBar } from "@/components/dashboard/ScoreBar";
 import { buildIncidentIntelligence } from "@/lib/incidentIntelligence";
 import { AlertItem, severityTagVariant } from "@/lib/scoring";
@@ -196,6 +197,7 @@ export function IncidentDetailOverlayContent({
 
         <div className="gov-detail-split gov-detail-split--wide-right">
           <Column gap="16" fillWidth className="gov-detail-split-col">
+            <EisenhowerMatrix alert={alert} />
             <AiRecommendationStream alert={alert} intel={intel} onLinkPress={onRecommendationLink} />
 
             <Panel title="Scoring rationale" subtitle="Why the model ranked this alert" padding="20">

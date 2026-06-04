@@ -3,9 +3,9 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Column, Flex, Text } from "@once-ui-system/core";
 
-const THINK_MS = 900;
-const THINK_LINE_MS = 280;
-const TYPE_MS_PER_CHAR = 10;
+const THINK_MS = 1400;
+const THINK_LINE_MS = 480;
+const TYPE_MS_PER_CHAR = 14;
 
 function useTypewriter(text: string, enabled: boolean, msPerChar = TYPE_MS_PER_CHAR) {
   const [count, setCount] = useState(0);
@@ -33,6 +33,8 @@ interface AiAnimatedNarrativeProps {
   thinkingLines: string[];
   fullText: string;
   resetKey: string;
+  /** Show full text immediately; no thinking rotation or character typing */
+  instantText?: boolean;
   badges?: ReactNode;
   children?: (visibleText: string, done: boolean) => ReactNode;
 }
@@ -42,18 +44,20 @@ export function AiAnimatedNarrative({
   thinkingLines,
   fullText,
   resetKey,
+  instantText = false,
   badges,
   children,
 }: AiAnimatedNarrativeProps) {
-  const [thinking, setThinking] = useState(true);
+  const [thinking, setThinking] = useState(!instantText);
   const [thinkIdx, setThinkIdx] = useState(0);
   const [typing, setTyping] = useState(false);
 
-  const typed = useTypewriter(fullText, typing);
-  const done = typing && typed.length >= fullText.length;
-  const visible = done ? fullText : typed;
+  const typed = useTypewriter(fullText, typing && !instantText);
+  const done = instantText || (typing && typed.length >= fullText.length);
+  const visible = instantText ? fullText : done ? fullText : typed;
 
   useEffect(() => {
+    if (instantText) return;
     setThinking(true);
     setTyping(false);
     setThinkIdx(0);
@@ -69,14 +73,14 @@ export function AiAnimatedNarrative({
       window.clearInterval(rotate);
       window.clearTimeout(startType);
     };
-  }, [resetKey, thinkingLines.length]);
+  }, [resetKey, thinkingLines.length, instantText]);
 
   return (
     <section className="gov-ai-narrative">
       <Text variant="label-default-s" onBackground="brand-weak">
         {title}
       </Text>
-      {thinking && (
+      {!instantText && thinking && (
         <Flex gap="12" vertical="center" className="gov-ai-narrative-thinking">
           <span className="gov-ai-orb gov-ai-orb--sm" aria-hidden />
           <Text variant="body-default-xs" onBackground="neutral-weak" className="gov-ai-think-line">
@@ -86,13 +90,13 @@ export function AiAnimatedNarrative({
       )}
       <Column gap="12" fillWidth>
         {badges}
-        {(typing || done) &&
+        {(instantText || typing || done) &&
           (children ? (
             children(visible, done)
           ) : (
             <Text variant="body-default-s" className="gov-ai-narrative-text">
               {visible}
-              {typing && !done && (
+              {!instantText && typing && !done && (
                 <span className="gov-ai-cursor" aria-hidden>
                   |
                 </span>

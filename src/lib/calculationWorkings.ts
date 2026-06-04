@@ -30,11 +30,24 @@ export interface WorkingsLine {
   ok?: boolean;
 }
 
+export interface WorkingsSectionFooter {
+  /** Plain-language recap of how this section's score was derived */
+  got: string;
+  /** Short note on what consumes this value downstream */
+  usedIn?: string;
+  /** Concrete formulas with the real numbers written into the app */
+  usageLines: WorkingsLine[];
+  /** Optional headline number (e.g. "72.3%") */
+  headline?: string;
+}
+
 export interface WorkingsSection {
   title: string;
   subtitle?: string;
   lines: WorkingsLine[];
+  /** @deprecated Prefer `footer`; kept for short numeric echoes */
   total?: string;
+  footer?: WorkingsSectionFooter;
 }
 
 export interface AdvisoryCalculationWorkings {
@@ -80,6 +93,45 @@ function signalLines(signals: VulnerabilitySignals): WorkingsLine[] {
       result: typeof val === "number" ? (key === "cvss" ? val.toFixed(1) : val.toFixed(4)) : String(val),
     };
   });
+}
+
+function domainWorkingsSection(
+  title: string,
+  subtitle: string,
+  lines: WorkingsLine[],
+  raw: number,
+  displayPct: number,
+  domainKey: keyof typeof DOMAIN_WEIGHTS,
+  threatScore: number,
+  opts?: { stage3Input?: number; usedInNote?: string },
+): WorkingsSection {
+  const weight = DOMAIN_WEIGHTS[domainKey];
+  const label = DOMAIN_LABELS[domainKey];
+  const stage3Input = opts?.stage3Input ?? raw;
+  const fusionContribution = stage3Input * weight;
+  const fusionPts = round4(fusionContribution * 100);
+  return {
+    title,
+    subtitle,
+    lines,
+    footer: {
+      headline: `${displayPct}%`,
+      got: `Add the weighted rows above → ${round4(raw)} (0–1), stored as domainScores.${domainKey} = ${displayPct}%.`,
+      usedIn: opts?.usedInNote,
+      usageLines: [
+        {
+          label: "Stage 3 fusion input",
+          expression: `${round4(stage3Input)} × ${weight} (${label})`,
+          result: `+${round4(fusionContribution)} → ${fusionPts} pts toward threat ${threatScore}`,
+        },
+        {
+          label: "Stored on alert",
+          expression: `domainScores.${domainKey}`,
+          result: `${displayPct}%`,
+        },
+      ],
+    },
+  };
 }
 
 function checkLine(
@@ -243,54 +295,114 @@ export function buildAdvisoryCalculationWorkings(alert: AlertItem): AdvisoryCalc
 
   const allChecksPass = verifyLines.every((l) => l.ok !== false);
 
+  const threatFusionTerms = (Object.keys(DOMAIN_LABELS) as (keyof typeof DOMAIN_LABELS)[]).map(
+    (key) => {
+      const raw = key === "remediation" ? remediationUrgency : domainRaws[key];
+      return raw * DOMAIN_WEIGHTS[key];
+    },
+  );
+  const threatFusionSum = threatFusionTerms.reduce((s, t) => s + t, 0);
+  const priorityThreatPart = vulnNorm * PRIORITY_WEIGHTS.vulnerabilityDomains;
+  const priorityAgencyPart = impact.composite * PRIORITY_WEIGHTS.agencyImpact;
+
   const sections: WorkingsSection[] = [
     {
       title: "Stage 1 · Signal ingestion",
       subtitle: "25 normalised intelligence dimensions (0–1) from advisory + WASOC sources",
       lines: signalLines(signals),
+      footer: {
+        headline: "25 signals",
+        got: "Advisory and WASOC fields mapped to 25 values (0–1; CVSS 0–10 until exploitability).",
+        usageLines: [
+          {
+            label: "→ Exploitability domain",
+            expression: `cvss ${v.cvss}, exploit ${v.exploit_available}, active ${v.active_exploitation}`,
+            result: `domainScores.exploitability = ${domains.exploitability}%`,
+          },
+          {
+            label: "→ Exposure domain",
+            expression: `internet_facing ${v.internet_facing}, public_service ${v.public_service}`,
+            result: `domainScores.exposure = ${domains.exposure}%`,
+          },
+          {
+            label: "→ Asset impact domain",
+            expression: `critical_service ${v.critical_service}, citizen_impact ${v.citizen_impact}`,
+            result: `domainScores.asset_impact = ${domains.asset_impact}%`,
+          },
+          {
+            label: "→ Intel confidence domain",
+            expression: `asd_match ${v.asd_match}, source_quality ${v.source_quality}`,
+            result: `domainScores.intel_confidence = ${domains.intel_confidence}%`,
+          },
+          {
+            label: "→ Remediation domain",
+            expression: `patch ${v.patch_available}, workaround ${v.workaround_exists}`,
+            result: `domainScores.remediation = ${domains.remediation}%`,
+          },
+        ],
+      },
     },
-    {
-      title: "Stage 2 · Exploitability tensor",
-      subtitle: "30% weight in threat fusion",
-      lines: domainTermLines(v, "exploitability", exploitRaw),
-      total: `domain = ${round4(exploitRaw)} → display ${domains.exploitability}%`,
-    },
-    {
-      title: "Stage 2 · Exposure tensor",
-      subtitle: "25% weight",
-      lines: [
+    domainWorkingsSection(
+      "Stage 2 · Exploitability tensor",
+      "30% weight in threat fusion",
+      domainTermLines(v, "exploitability", exploitRaw),
+      exploitRaw,
+      domains.exploitability,
+      "exploitability",
+      domains.final_score,
+    ),
+    domainWorkingsSection(
+      "Stage 2 · Exposure tensor",
+      "25% weight",
+      [
         { label: "internet_facing × 0.35", expression: `${v.internet_facing}×0.35`, result: String(round4(v.internet_facing * 0.35)) },
         { label: "public_service × 0.20", expression: `${v.public_service}×0.20`, result: String(round4(v.public_service * 0.2)) },
         { label: "(1−auth_strength) × 0.20", expression: `(1−${v.auth_strength})×0.20`, result: String(round4((1 - v.auth_strength) * 0.2)) },
         { label: "(1−network_segmentation) × 0.10", expression: `(1−${v.network_segmentation})×0.10`, result: String(round4((1 - v.network_segmentation) * 0.1)) },
         { label: "remote_access × 0.15", expression: `${v.remote_access}×0.15`, result: String(round4(v.remote_access * 0.15)) },
       ],
-      total: `domain = ${round4(exposureRaw)} → ${domains.exposure}%`,
-    },
-    {
-      title: "Stage 2 · Asset impact tensor",
-      subtitle: "25% weight",
-      lines: domainTermLines(v, "asset_impact", assetRaw),
-      total: `domain = ${round4(assetRaw)} → ${domains.asset_impact}%`,
-    },
-    {
-      title: "Stage 2 · Intel confidence tensor",
-      subtitle: "15% weight",
-      lines: [
+      exposureRaw,
+      domains.exposure,
+      "exposure",
+      domains.final_score,
+    ),
+    domainWorkingsSection(
+      "Stage 2 · Asset impact tensor",
+      "25% weight",
+      domainTermLines(v, "asset_impact", assetRaw),
+      assetRaw,
+      domains.asset_impact,
+      "asset_impact",
+      domains.final_score,
+    ),
+    domainWorkingsSection(
+      "Stage 2 · Intel confidence tensor",
+      "15% weight",
+      [
         { label: "asd_match × 0.30", expression: `${v.asd_match}×0.30`, result: String(round4(v.asd_match * 0.3)) },
         { label: "vendor_advisory × 0.10", expression: `${v.vendor_advisory}×0.10`, result: String(round4(v.vendor_advisory * 0.1)) },
         { label: "min(source_count/5,1) × 0.30", expression: `min(${v.source_count}/5,1)×0.30`, result: String(round4(sourceCountNorm * 0.3)) },
         { label: "source_quality × 0.15", expression: `${v.source_quality}×0.15`, result: String(round4(v.source_quality * 0.15)) },
         { label: "recency × 0.15", expression: `${v.recency}×0.15`, result: String(round4(v.recency * 0.15)) },
       ],
-      total: `domain = ${round4(intelRaw)} → ${domains.intel_confidence}%`,
-    },
-    {
-      title: "Stage 2 · Remediation tensor",
-      subtitle: "5% weight (higher = easier to fix, lowers urgency slightly)",
-      lines: domainTermLines(v, "remediation", remediationRaw),
-      total: `domain = ${round4(remediationRaw)} → ${domains.remediation}%`,
-    },
+      intelRaw,
+      domains.intel_confidence,
+      "intel_confidence",
+      domains.final_score,
+    ),
+    domainWorkingsSection(
+      "Stage 2 · Remediation tensor",
+      "5% weight (higher = easier to fix, lowers urgency slightly)",
+      domainTermLines(v, "remediation", remediationRaw),
+      remediationRaw,
+      domains.remediation,
+      "remediation",
+      domains.final_score,
+      {
+        stage3Input: remediationUrgency,
+        usedInNote: "Stage 3 uses urgency = 1 − readiness (not the readiness % above).",
+      },
+    ),
     {
       title: "Stage 3 · Threat score fusion",
       subtitle: "Weighted sum of five domain tensors → 0–100 threat score",
@@ -303,13 +415,62 @@ export function buildAdvisoryCalculationWorkings(alert: AlertItem): AdvisoryCalc
           result: round4(raw * DOMAIN_WEIGHTS[key]).toString(),
         };
       }),
-      total: `threatScore = ${round4(vulnFinalRaw * 100)}/100 stored as ${domains.final_score} (${b.cyberRiskLevel})`,
+      footer: {
+        headline: `${domains.final_score}`,
+        got: `Sum five weighted domains: ${round4(threatFusionSum)} × 100 → threat score ${domains.final_score} (${b.cyberRiskLevel}).`,
+        usageLines: [
+          {
+            label: "domainScores.final_score",
+            expression: "stored on alert",
+            result: String(domains.final_score),
+          },
+          {
+            label: "scoreBreakdown.technical",
+            expression: `${domains.final_score} / 100`,
+            result: String(round4(b.technical)),
+          },
+          {
+            label: "Stage 5 threat layer",
+            expression: `(${domains.final_score}/100) × ${PRIORITY_WEIGHTS.vulnerabilityDomains}`,
+            result: `${round4(priorityThreatPart)} → +${Math.round(priorityThreatPart * 100)}% of prioritisation`,
+          },
+          ...(ranked[0]
+            ? [
+                {
+                  label: `Stage 6 #1 ${ranked[0].agency.name}`,
+                  expression: `(${domains.final_score}/100) × ${round4(ranked[0].agency.criticalityWeight)} × ${TIER_MULT[ranked[0].agency.tier]}`,
+                  result: `urgency ${ranked[0].urgencyPercent} (stored ${round4(ranked[0].urgencyScore)})`,
+                },
+              ]
+            : []),
+        ],
+      },
     },
     {
       title: "Stage 4 · WA agency exposure field",
       subtitle: "Multi-agency breadth + criticality + tier-1 concentration",
       lines: agencyImpactLines(impact),
-      total: `agencyImpact = clamp01(sum) = ${round4(impact.composite)} → ${Math.round(impact.composite * 100)}%`,
+      footer: {
+        headline: `${Math.round(impact.composite * 100)}%`,
+        got: `clamp01(breadth + criticality + tier-1) = ${round4(impact.composite)} (${Math.round(impact.composite * 100)}% agency impact).`,
+        usageLines: [
+          {
+            label: "agencyImpact.composite",
+            expression: "stored on alert",
+            result: String(round4(b.agencyImpact.composite)),
+          },
+          {
+            label: "scoreBreakdown.agencyExposure",
+            expression: "same composite",
+            result: String(round4(b.agencyExposure)),
+          },
+          {
+            label: "Stage 5 agency layer",
+            expression: `${round4(impact.composite)} × ${PRIORITY_WEIGHTS.agencyImpact}`,
+            result: `${round4(priorityAgencyPart)} → +${Math.round(priorityAgencyPart * 100)}% of prioritisation`,
+          },
+        ],
+      },
     },
     {
       title: "Stage 5 · Statewide prioritisation fusion",
@@ -318,34 +479,124 @@ export function buildAdvisoryCalculationWorkings(alert: AlertItem): AdvisoryCalc
         {
           label: "threat layer",
           expression: `(${domains.final_score}/100) × ${PRIORITY_WEIGHTS.vulnerabilityDomains}`,
-          result: round4(vulnNorm * PRIORITY_WEIGHTS.vulnerabilityDomains).toString(),
+          result: round4(priorityThreatPart).toString(),
         },
         {
           label: "agency layer",
           expression: `${round4(impact.composite)} × ${PRIORITY_WEIGHTS.agencyImpact}`,
-          result: round4(impact.composite * PRIORITY_WEIGHTS.agencyImpact).toString(),
+          result: round4(priorityAgencyPart).toString(),
         },
       ],
-      total: `prioritisation = clamp01(${round4(priorityFromEngine)}) → ${Math.round(alert.compositeScore * 100)} · ${severityFromScore(priorityFromEngine)} (stored ${alert.severity})`,
+      footer: {
+        headline: `${Math.round(alert.compositeScore * 100)}`,
+        got: `clamp01(${round4(priorityThreatPart)} + ${round4(priorityAgencyPart)}) = ${round4(priorityFromEngine)}.`,
+        usageLines: [
+          {
+            label: "scoreBreakdown.priorityScore",
+            expression: "combinePriorityScore()",
+            result: String(round4(b.priorityScore)),
+          },
+          {
+            label: "alert.compositeScore",
+            expression: "queue / KPI / sort key",
+            result: String(round4(alert.compositeScore)),
+          },
+          {
+            label: "alert.severity",
+            expression: `severityFromScore(${round4(priorityFromEngine)})`,
+            result: `${alert.severity} (${b.cyberRiskLevel})`,
+          },
+        ],
+      },
     },
     {
       title: "Stage 6 · Per-agency act-first ordering",
       subtitle: "threatScore × agency criticality × tier multiplier",
       lines: agencyLines.length ? agencyLines : [{ label: "single agency", expression: "", result: "no cross-agency sort" }],
-      total: "Same formula as rankAffectedAgencies() in engine",
+      footer: {
+        headline: ranked[0] ? `${ranked[0].urgencyPercent}` : "n/a",
+        got: ranked.length
+          ? `Each row: (${domains.final_score}/100) × criticality × tier → urgency, then rank #1 highest.`
+          : "Single agency; no cross-agency ranking.",
+        usageLines: ranked.length
+          ? ranked.slice(0, 3).map((entry) => ({
+              label: `#${entry.rank} ${entry.agency.name}`,
+              expression: `(${domains.final_score}/100) × ${round4(entry.agency.criticalityWeight)} × ${TIER_MULT[entry.agency.tier]}`,
+              result: `agencyRanking[${entry.rank - 1}].urgencyPercent = ${entry.urgencyPercent}`,
+            }))
+          : [
+              {
+                label: "agencyRanking",
+                expression: "empty",
+                result: "[]",
+              },
+            ],
+      },
     },
     {
       title: "Context layer (AI triage hints)",
-      subtitle: "Stored for analyst urgency  not added into prioritisation score",
+      subtitle: "Stored for analyst urgency; not added into prioritisation score",
       lines: ctxParts.length
         ? ctxParts.map((p) => ({ label: p.label, expression: "context boost", result: `+${p.val}` }))
         : [{ label: "none", expression: "", result: "0" }],
-      total: `contextSignals = ${round4(ctxClamped)} · source credibility ${round4(b.sourceCredibility)}`,
+      footer: {
+        headline: round4(ctxClamped).toString(),
+        got: ctxParts.length
+          ? `Hints sum → ${round4(ctxClamped)} (capped at 1). Not fused into prioritisation.`
+          : "No context boosts on this item.",
+        usageLines: [
+          {
+            label: "scoreBreakdown.contextSignals",
+            expression: "stored",
+            result: String(round4(b.contextSignals)),
+          },
+          {
+            label: "scoreBreakdown.sourceCredibility",
+            expression: "stored",
+            result: String(round4(b.sourceCredibility)),
+          },
+          {
+            label: "alert.compositeScore",
+            expression: "unchanged by context",
+            result: String(round4(alert.compositeScore)),
+          },
+          {
+            label: "domainScores.final_score",
+            expression: "unchanged by context",
+            result: String(domains.final_score),
+          },
+        ],
+      },
     },
     {
       title: "Integrity check · recomputed vs engine",
-      subtitle: allChecksPass ? "All formulas match production code" : "Mismatch  inspect rounding",
+      subtitle: allChecksPass ? "All formulas match production code" : "Mismatch; inspect rounding",
       lines: verifyLines,
+      footer: {
+        headline: allChecksPass ? "Pass" : "Drift",
+        got: "Re-run production functions and compare to values already on this alert.",
+        usageLines: [
+          {
+            label: "threat final_score",
+            expression: `engine ${domains.final_score}`,
+            result: `stored ${b.domainScores.final_score}`,
+          },
+          {
+            label: "prioritisation",
+            expression: `recomputed ${round4(priorityFromEngine)}`,
+            result: `compositeScore ${round4(alert.compositeScore)}`,
+          },
+          ...(ranked[0] && b.agencyRanking[0]
+            ? [
+                {
+                  label: "top agency urgency",
+                  expression: `recomputed ${round4(ranked[0].urgencyScore)}`,
+                  result: `stored ${round4(b.agencyRanking[0].urgencyScore)} (${b.agencyRanking[0].urgencyPercent})`,
+                },
+              ]
+            : []),
+        ],
+      },
     },
   ];
 

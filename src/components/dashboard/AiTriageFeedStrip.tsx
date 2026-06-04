@@ -7,12 +7,22 @@ import type { TriageCard } from "@/hooks/useAiTriageSimulation";
 interface AiTriageFeedStripProps {
   cards: TriageCard[];
   compact?: boolean;
+  /** Horizontal scroll row (workbench ingest zone) */
+  horizontal?: boolean;
 }
 
-export function AiTriageFeedStrip({ cards, compact = false }: AiTriageFeedStripProps) {
+export function AiTriageFeedStrip({
+  cards,
+  compact = false,
+  horizontal = false,
+}: AiTriageFeedStripProps) {
+  const layoutClass = horizontal ? " gov-feed-strip--horizontal" : "";
+
   if (cards.length === 0) {
     return (
-      <div className={`gov-feed-strip gov-feed-strip--empty${compact ? " gov-feed-strip--compact" : ""}`}>
+      <div
+        className={`gov-feed-strip gov-feed-strip--empty${compact ? " gov-feed-strip--compact" : ""}${layoutClass}`}
+      >
         <Text variant="body-default-xs" onBackground="neutral-weak">
           Waiting for ingest…
         </Text>
@@ -21,7 +31,7 @@ export function AiTriageFeedStrip({ cards, compact = false }: AiTriageFeedStripP
   }
 
   return (
-    <div className={`gov-feed-strip${compact ? " gov-feed-strip--compact" : ""}`}>
+    <div className={`gov-feed-strip${compact ? " gov-feed-strip--compact" : ""}${layoutClass}`}>
       <Text variant="label-default-xs" onBackground="neutral-weak" className="gov-feed-strip-title">
         Live feed ({cards.length})
       </Text>

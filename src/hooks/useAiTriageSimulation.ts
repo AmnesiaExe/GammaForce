@@ -20,13 +20,13 @@ import {
 } from "@/data/aiTriageSimulation";
 import { AlertItem } from "@/lib/scoring";
 
-const INGEST_MS = 1100;
-const TICK_MS = 300;
-const PROCESS_MS = 5500;
+const INGEST_MS = 1650;
+const TICK_MS = 450;
+const PROCESS_MS = 7800;
 const MAX_INCOMING = 4;
 const MAX_PROCESSING = 1;
 const MAX_RANKED = 16;
-const MAX_DISCARDED = 10;
+const MAX_DISCARDED = 4;
 const MAX_ACTIVITY = 12;
 const HOT_SEQUENCE = 3;
 
@@ -85,9 +85,9 @@ function sortRanked(cards: TriageCard[]) {
 function stageFor(card: TriageCard, now: number): ProcessingStage {
   if (card.sequenceIndex >= HOT_SEQUENCE) return "score";
   const elapsed = now - card.processingStartedAt;
-  if (elapsed < 400) return "flash";
-  if (elapsed < 1000) return "correlate";
-  if (elapsed < 1600) return "predict";
+  if (elapsed < 650) return "flash";
+  if (elapsed < 1600) return "correlate";
+  if (elapsed < 2600) return "predict";
   return "score";
 }
 
@@ -187,7 +187,7 @@ export function useAiTriageSimulation(pool: AlertItem[]) {
         const i = AI_OPERATOR_TASKS.indexOf(t);
         return AI_OPERATOR_TASKS[(i + 1) % AI_OPERATOR_TASKS.length];
       });
-    }, 3000);
+    }, 5200);
     return () => window.clearInterval(rotate);
   }, [phase]);
 
@@ -195,7 +195,7 @@ export function useAiTriageSimulation(pool: AlertItem[]) {
     if (phase !== "live") return;
     const aiOps = window.setInterval(() => {
       setCards((prev) => randomAiShuffle(prev, pushActivity, setStats));
-    }, 6500);
+    }, 10000);
     return () => window.clearInterval(aiOps);
   }, [phase, pushActivity]);
 
@@ -206,7 +206,7 @@ export function useAiTriageSimulation(pool: AlertItem[]) {
           ? prev.map((c) => (c.highlight ? { ...c, highlight: undefined } : c))
           : prev,
       );
-    }, 700);
+    }, 1100);
     return () => window.clearInterval(clear);
   }, []);
 

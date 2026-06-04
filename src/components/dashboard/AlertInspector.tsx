@@ -9,6 +9,7 @@ import {
   Tag,
   Text,
 } from "@once-ui-system/core";
+import { EisenhowerMatrix } from "@/components/dashboard/EisenhowerMatrix";
 import { Panel } from "@/components/dashboard/Panel";
 import {
   AlertItem,
@@ -156,6 +157,8 @@ export function AlertInspector({ alert }: AlertInspectorProps) {
             </Text>
           )}
         </Column>
+
+        <EisenhowerMatrix alert={alert} compact />
 
         <Column gap="12" fillWidth>
           <Text variant="label-default-s" onBackground="neutral-weak">

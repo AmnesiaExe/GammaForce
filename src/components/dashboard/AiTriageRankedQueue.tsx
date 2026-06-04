@@ -18,7 +18,7 @@ export function AiTriageRankedQueue({
   highlightedId,
   onOpen,
 }: AiTriageRankedQueueProps) {
-  const flipRef = useFlipList(cards.map((c) => c.uid).join("|"));
+  const flipRef = useFlipList(cards.map((c) => c.uid).join("|"), false);
 
   return (
     <div ref={flipRef} className="gov-ranked-queue-list">

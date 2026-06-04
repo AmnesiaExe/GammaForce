@@ -3,7 +3,7 @@
 import { useLayoutEffect, useRef } from "react";
 
 /** FLIP animation when list order changes (ranked queue reorder). */
-export function useFlipList(itemKey: string) {
+export function useFlipList(itemKey: string, animate = true) {
   const containerRef = useRef<HTMLDivElement>(null);
   const positions = useRef(new Map<string, number>());
 
@@ -20,13 +20,12 @@ export function useFlipList(itemKey: string) {
       const prev = positions.current.get(id);
       if (prev != null) {
         const delta = prev - top;
-        if (Math.abs(delta) > 3) {
+        if (animate && Math.abs(delta) > 6) {
           el.style.transform = `translateY(${delta}px)`;
           el.style.transition = "transform 0s";
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-              el.style.transition =
-                "transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)";
+              el.style.transition = "transform 0.32s ease-out";
               el.style.transform = "";
             });
           });
@@ -34,7 +33,7 @@ export function useFlipList(itemKey: string) {
       }
       positions.current.set(id, top);
     });
-  }, [itemKey]);
+  }, [itemKey, animate]);
 
   return containerRef;
 }

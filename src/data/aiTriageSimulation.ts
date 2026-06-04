@@ -43,8 +43,9 @@ export const SIMULATED_NARRATIVES: SimulatedNarrative[] = [
   { displayTitle: "Web shell upload: `.aspx` dropped under public-facing SharePoint path", aiTag: "Web compromise", aiHint: "Generating containment steps per affected agency CMS owner" },
   { displayTitle: "Ransomware pre-cursor: VSS shadow copy deletion on Treasury file server", aiTag: "Ransomware signal", aiHint: "Matching TTP to sector ISAC bulletin from last 48h" },
   { displayTitle: "Routine Chrome update: duplicate bulletin #7 (low urgency)", aiTag: "Noise", aiHint: "Matching against 6 prior identical vendor posts" },
-  { displayTitle: "SSL cert expiry warning: non-production lab host", aiTag: "Hygiene", aiHint: "Asset tagged dev/test  auto-downgrading statewide priority" },
-  { displayTitle: "Marketing site typo squatting: no WA Gov brand overlap", aiTag: "Low relevance", aiHint: "Disregarding  outside government footprint" },
+  { displayTitle: "Vendor PSIRT repost: identical CVE text as bulletin #2 this week", aiTag: "Noise", aiHint: "Duplicate bulletin · same issue already in queue" },
+  { displayTitle: "SSL cert expiry warning: non-production lab host", aiTag: "Hygiene", aiHint: "Asset tagged dev/test · auto-downgrading statewide priority" },
+  { displayTitle: "Marketing site typo squatting: no WA Gov brand overlap", aiTag: "Brand monitoring", aiHint: "Tracked for awareness · still scored for statewide queue" },
 ];
 
 export const AI_OPERATOR_TASKS = [
@@ -61,7 +62,7 @@ export const AI_OPERATOR_TASKS = [
 ];
 
 export const TRIAGE_AI_ROLE =
-  "Live triage: corroborates feeds, links patterns, scores threat and agency impact, ranks statewide contact order, and filters duplicates and low-value noise. Filtered items stay in the register for analyst review.";
+  "Live triage: corroborates feeds, links patterns, scores threat and agency impact, ranks statewide contact order, and filters a small set of duplicate bulletins. Filtered items stay in the register for analyst review.";
 
 export const STAGE_THINKING_LINES: Record<ProcessingStage, string[]> = {
   flash: [
@@ -172,24 +173,18 @@ export function deprioritiseReasonFor(card: {
   aiHint: string;
 }): string {
   if (card.aiTag === "Noise") return "Duplicate bulletin · already in queue";
-  if (card.aiTag === "Low relevance") return "Out of scope · not WA Government";
-  if (card.aiTag === "Hygiene") return "Low value · dev/test hygiene only";
-  return card.aiHint || "Low value · not worth statewide action";
+  return card.aiHint || "Duplicate bulletin · already in queue";
 }
 
 export function enrichAlertForDemo(alert: AlertItem, index: number) {
   const n = narrativeForIndex(index);
   const useCreative =
     index < SIMULATED_NARRATIVES.length || alert.category === "Threat Intelligence";
-  const isNoise = useCreative && (n.aiTag === "Noise" || n.aiTag === "Low relevance");
+  const isNoise = useCreative && n.aiTag === "Noise";
   return {
     displayTitle: useCreative ? n.displayTitle : alert.title,
     aiTag: useCreative ? n.aiTag : alert.category,
-    aiHint: isNoise
-      ? n.aiTag === "Noise"
-        ? "Duplicate bulletin · same issue already in queue"
-        : "Out of scope · not WA Government footprint"
-      : n.aiHint,
+    aiHint: isNoise ? "Duplicate bulletin · same issue already in queue" : n.aiHint,
     isNoise,
   };
 }

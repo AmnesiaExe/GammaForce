@@ -28,7 +28,6 @@ interface AiTriageWorkbenchProps {
   focusCard: TriageCard | null;
   phase: "standby" | "live";
   incoming: TriageCard[];
-  counts: { incoming: number; processing: number; ranked: number; discarded: number };
 }
 
 export function AiTriageWorkbench({
@@ -37,7 +36,6 @@ export function AiTriageWorkbench({
   focusCard,
   phase,
   incoming,
-  counts,
 }: AiTriageWorkbenchProps) {
   const feed = focusCard ? feedStyle(focusCard.alert.sourceKey) : null;
   const isAnalysing = phase === "live" && focusCard?.lane === "processing";
@@ -71,12 +69,12 @@ export function AiTriageWorkbench({
   const recentActivity = activity.slice(0, 6);
 
   return (
-    <div className="gov-ai-workbench">
-      <div className="gov-ai-workbench-left">
+    <div className="gov-ai-workbench gov-ai-workbench--stacked">
+      <div className="gov-ai-workbench-main">
         <div className={`gov-ai-analysis-card${isAnalysing ? " gov-ai-analysis-card--live" : ""}`}>
           <Flex gap="12" vertical="center" className="gov-ai-analysis-head">
             <span className={`gov-ai-orb${isAnalysing ? " gov-ai-orb--active" : ""}`} aria-hidden />
-            <Column gap="4" flex={1}>
+            <Column gap="4" flex={1} style={{ minWidth: 0 }}>
               <Text variant="label-strong-s" className="gov-ai-stream-label">
                 {isAnalysing ? "Live triage" : "WASOC AI"}
               </Text>
@@ -84,6 +82,12 @@ export function AiTriageWorkbench({
                 {phase === "standby" ? "Standing by for ingest…" : liveTask}
               </Text>
             </Column>
+            {focusCard?.lane === "processing" && (
+              <div className="gov-ai-forming-score gov-ai-forming-score--head">
+                Priority{" "}
+                <span style={{ color: scoreColor(priorityPct) }}>{priorityPct}</span>
+              </div>
+            )}
           </Flex>
 
           {isAnalysing && (
@@ -106,84 +110,86 @@ export function AiTriageWorkbench({
             </div>
           )}
 
-          {focusCard && (
-            <div className="gov-ai-analysis-focus gov-ai-analysis-focus--compact">
-              <Flex gap="8" wrap vertical="center">
-                {feed && (
-                  <span
-                    className="gov-feed-badge"
-                    style={{
-                      color: feed.color,
-                      background: feed.bg,
-                      borderColor: feed.border,
-                    }}
-                  >
-                    {feed.label}
-                  </span>
+          <div className={`gov-ai-workbench-body${isAnalysing ? " gov-ai-workbench-body--live" : ""}`}>
+            {focusCard && (
+              <div className="gov-ai-analysis-focus gov-ai-analysis-focus--compact">
+                <Flex gap="8" wrap vertical="center">
+                  {feed && (
+                    <span
+                      className="gov-feed-badge"
+                      style={{
+                        color: feed.color,
+                        background: feed.bg,
+                        borderColor: feed.border,
+                      }}
+                    >
+                      {feed.label}
+                    </span>
+                  )}
+                  <span className="gov-agency-badge">{focusCard.agencyLabel}</span>
+                  <Tag size="s" variant={severityTagVariant(focusCard.alert.severity)} label={focusCard.alert.severity} />
+                  <Tag size="s" variant="neutral" label={focusCard.aiTag} />
+                </Flex>
+                <span className="gov-ai-analysis-id">{focusCard.alert.id}</span>
+                {focusCard.aiHint && (
+                  <Text variant="body-default-xs" onBackground="neutral-weak">
+                    {focusCard.aiHint}
+                  </Text>
                 )}
-                <span className="gov-agency-badge">{focusCard.agencyLabel}</span>
-                <Tag size="s" variant={severityTagVariant(focusCard.alert.severity)} label={focusCard.alert.severity} />
-                <Tag size="s" variant="neutral" label={focusCard.aiTag} />
-              </Flex>
-              <span className="gov-ai-analysis-id">{focusCard.alert.id}</span>
-              {focusCard.aiHint && (
-                <Text variant="body-default-xs" onBackground="neutral-weak">
-                  {focusCard.aiHint}
+              </div>
+            )}
+
+            <div className="gov-ai-workbench-narrative">
+              {isAnalysing && focusCard ? (
+                <AiAnimatedNarrative
+                  title="Triage analysis"
+                  thinkingLines={thinkingLines}
+                  fullText={fullText}
+                  resetKey={focusCard.uid}
+                  instantText
+                />
+              ) : (
+                <Text variant="body-default-s" onBackground="neutral-weak">
+                  {phase === "standby"
+                    ? "Triage starts when an alert enters review: corroboration, patterns, agency impact, then priority ranking."
+                    : "Waiting for next alert in the AI queue…"}
                 </Text>
               )}
             </div>
-          )}
 
-          {isAnalysing && focusCard ? (
-            <AiAnimatedNarrative
-              title="Triage analysis"
-              thinkingLines={thinkingLines}
-              fullText={fullText}
-              resetKey={`${focusCard.uid}-${stage}`}
-            />
-          ) : (
-            <Text variant="body-default-s" onBackground="neutral-weak">
-              {phase === "standby"
-                ? "Triage starts when an alert enters review: corroboration, patterns, agency impact, then priority ranking."
-                : "Waiting for next alert in the AI queue…"}
-            </Text>
-          )}
-
-          {focusCard?.lane === "processing" && (
-            <p className="gov-ai-forming-score">
-              Forming priority{" "}
-              <span style={{ color: scoreColor(priorityPct) }}>{priorityPct}</span>
-            </p>
-          )}
-
-          {phase === "live" && recentActivity.length > 0 && (
-            <Column gap="8" fillWidth className="gov-workbench-activity">
-              <Text variant="label-default-xs" onBackground="neutral-weak">
-                Live operations
-              </Text>
-              <ul className="gov-workbench-activity-list">
-                {recentActivity.map((line) => (
-                  <li
-                    key={line.id}
-                    className={`gov-workbench-activity-line gov-workbench-activity-line--${line.tone}`}
-                  >
-                    <span className="gov-workbench-activity-time">{line.time}</span>
-                    <span>{line.message}</span>
-                  </li>
-                ))}
-              </ul>
-            </Column>
-          )}
+            {phase === "live" && recentActivity.length > 0 && (
+              <Column gap="8" fillWidth className="gov-workbench-activity">
+                <Text variant="label-default-xs" onBackground="neutral-weak">
+                  Live operations
+                </Text>
+                <ul className="gov-workbench-activity-list">
+                  {recentActivity.map((line) => (
+                    <li
+                      key={line.id}
+                      className={`gov-workbench-activity-line gov-workbench-activity-line--${line.tone}`}
+                    >
+                      <span className="gov-workbench-activity-time">{line.time}</span>
+                      <span>{line.message}</span>
+                    </li>
+                  ))}
+                </ul>
+              </Column>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="gov-ai-workbench-right">
-        <AiTriageFeedStrip cards={incoming} compact />
-        <Text variant="body-default-xs" onBackground="neutral-weak" className="gov-feed-counters-compact">
-          In {counts.incoming} · Triage {counts.processing} · Ranked {counts.ranked} · Filtered{" "}
-          {counts.discarded}
-        </Text>
-      </div>
+      <section className="gov-ai-workbench-feed-zone" aria-label="Incoming ingest queue">
+        <Flex fillWidth horizontal="between" vertical="center" gap="8" wrap className="gov-ai-workbench-feed-head">
+          <Text variant="label-default-s" onBackground="neutral-weak">
+            Incoming queue
+          </Text>
+          <Text variant="body-default-xs" onBackground="neutral-weak">
+            {incoming.length} waiting
+          </Text>
+        </Flex>
+        <AiTriageFeedStrip cards={incoming} compact horizontal />
+      </section>
     </div>
   );
 }

@@ -336,6 +336,388 @@ body {
   );
 }
 
+/* Eisenhower matrix (urgent ↑, important →) */
+.gov-eisenhower-panel .gov-panel,
+.gov-eisenhower--compact {
+  min-width: 0;
+}
+
+.gov-eisenhower--compact {
+  width: 100%;
+}
+
+.gov-eisenhower-chart-surface {
+  padding: 1.25rem 1rem 1rem;
+  border-radius: var(--radius-m);
+  border: 1px solid var(--neutral-alpha-weak);
+  background: var(--neutral-background-weak);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.gov-eisenhower-chart-wrap {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: 1fr auto;
+  gap: 0.5rem 0.65rem;
+  align-items: stretch;
+  width: 100%;
+  max-width: 20rem;
+  margin: 0 auto;
+}
+
+.gov-eisenhower-axis-y {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--neutral-on-background-weak);
+  justify-self: center;
+  grid-row: 1;
+  grid-column: 1;
+}
+
+.gov-eisenhower-axis-y-ticks {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 0.6rem;
+  color: var(--neutral-on-background-weak);
+  padding: 0.15rem 0;
+  grid-row: 1;
+  grid-column: 3;
+}
+
+.gov-eisenhower-chart {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.gov-eisenhower-grid {
+  position: relative;
+  aspect-ratio: 1;
+  width: 100%;
+  min-height: 9.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--neutral-border-medium);
+  overflow: hidden;
+  background: var(--page-background);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.gov-eisenhower--compact .gov-eisenhower-chart-wrap {
+  max-width: 100%;
+}
+
+.gov-eisenhower--compact .gov-eisenhower-grid {
+  min-height: 8rem;
+}
+
+.gov-eisenhower-quad {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 0.5rem 0.55rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--neutral-on-background-weak);
+  border: 1px solid transparent;
+}
+
+.gov-eisenhower-quad span {
+  line-height: 1.2;
+}
+
+/* Top-right: urgent + important */
+.gov-eisenhower-quad--crises {
+  background: rgba(248, 113, 113, 0.12);
+  color: rgba(252, 165, 165, 0.95);
+  align-items: flex-start;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+/* Top-left: urgent + less important */
+.gov-eisenhower-quad--interruption {
+  background: rgba(251, 191, 36, 0.1);
+  color: rgba(253, 224, 71, 0.9);
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+/* Bottom-right: less urgent + important */
+.gov-eisenhower-quad--goals {
+  background: rgba(56, 189, 248, 0.1);
+  color: rgba(125, 211, 252, 0.95);
+  align-items: flex-end;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+/* Bottom-left: less urgent + less important */
+.gov-eisenhower-quad--distraction {
+  background: rgba(148, 163, 184, 0.08);
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+
+.gov-eisenhower-midline {
+  position: absolute;
+  pointer-events: none;
+  background: var(--neutral-border-medium);
+  opacity: 0.55;
+}
+
+.gov-eisenhower-midline--v {
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  transform: translateX(-50%);
+}
+
+.gov-eisenhower-midline--h {
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  transform: translateY(-50%);
+}
+
+.gov-eisenhower-dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  margin: 0;
+  border-radius: 50%;
+  border: 2px solid var(--page-background);
+  transform: translate(-50%, 50%);
+  z-index: 2;
+  transition: left 0.35s ease, bottom 0.35s ease;
+}
+
+.gov-eisenhower-axis-x {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--neutral-on-background-weak);
+  padding: 0 0.15rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.gov-eisenhower-verdict {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-m);
+  border: 1px solid var(--neutral-alpha-weak);
+  background: var(--neutral-background-weak);
+}
+
+.gov-eisenhower--embedded .gov-eisenhower-chart-surface {
+  margin-top: 0.25rem;
+}
+
+/* Live triage Eisenhower map */
+.gov-triage-matrix-plot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.gov-triage-matrix-chart-wrap {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.gov-triage-matrix-surface {
+  position: relative;
+  padding: 0.75rem;
+}
+
+.gov-triage-matrix-grid {
+  min-height: 16rem;
+  max-width: none;
+  width: 100%;
+}
+
+.gov-triage-matrix-dots {
+  position: absolute;
+  inset: 0.75rem;
+  pointer-events: none;
+}
+
+.gov-triage-matrix-dot {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--page-background);
+  background: var(--dot-color, var(--brand-solid));
+  transform: translate(-50%, 50%);
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 3;
+  transition:
+    left 0.55s ease,
+    bottom 0.55s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.35s ease;
+  animation: gov-triage-dot-enter 0.45s ease;
+}
+
+@keyframes gov-triage-dot-enter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 50%) scale(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 50%) scale(1);
+  }
+}
+
+.gov-triage-matrix-dot--incoming {
+  opacity: 0.55;
+  width: 9px;
+  height: 9px;
+  box-shadow: 0 0 0 0 transparent;
+  animation: gov-triage-dot-enter 0.4s ease, gov-triage-dot-pulse 1.6s ease-in-out infinite;
+}
+
+.gov-triage-matrix-dot--processing {
+  width: 14px;
+  height: 14px;
+  z-index: 5;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--dot-color) 35%, transparent),
+    0 0 14px color-mix(in srgb, var(--dot-color) 55%, transparent);
+  animation: gov-triage-dot-enter 0.35s ease, gov-triage-dot-pulse 1.2s ease-in-out infinite;
+}
+
+.gov-triage-matrix-dot--ranked {
+  opacity: 1;
+}
+
+.gov-triage-matrix-dot--discarded {
+  opacity: 0.38;
+  background: var(--neutral-solid-medium);
+  border-color: var(--neutral-border-medium);
+  width: 8px;
+  height: 8px;
+}
+
+.gov-triage-matrix-dot--focus {
+  z-index: 6;
+  outline: 2px solid var(--brand-border-strong);
+  outline-offset: 2px;
+}
+
+.gov-triage-matrix-dot--selected {
+  z-index: 7;
+  outline: 2px solid #fbbf24;
+  outline-offset: 3px;
+  transform: translate(-50%, 50%) scale(1.2);
+}
+
+.gov-triage-matrix-dot--hover,
+.gov-triage-matrix-dot:focus-visible {
+  z-index: 8;
+  transform: translate(-50%, 50%) scale(1.35);
+  outline: 2px solid var(--brand-on-background-weak);
+  outline-offset: 2px;
+}
+
+.gov-triage-matrix-dot--fly {
+  animation: gov-triage-dot-enter 0.45s ease, gov-triage-dot-fly 0.7s ease;
+}
+
+@keyframes gov-triage-dot-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px color-mix(in srgb, var(--dot-color) 25%, transparent),
+      0 0 8px color-mix(in srgb, var(--dot-color) 40%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 5px color-mix(in srgb, var(--dot-color) 18%, transparent),
+      0 0 16px color-mix(in srgb, var(--dot-color) 55%, transparent);
+  }
+}
+
+@keyframes gov-triage-dot-fly {
+  0% {
+    filter: brightness(1.4);
+  }
+  100% {
+    filter: none;
+  }
+}
+
+.gov-triage-matrix-legend-item {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--neutral-border-weak);
+}
+
+.gov-triage-matrix-legend-item--incoming {
+  color: #94a3b8;
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+.gov-triage-matrix-legend-item--processing {
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.4);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.gov-triage-matrix-legend-item--ranked {
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.35);
+}
+
+.gov-triage-matrix-legend-item--discarded {
+  color: #64748b;
+  opacity: 0.85;
+}
+
+.gov-triage-matrix-tooltip {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-m);
+  border: 1px solid var(--brand-border-medium);
+  background: var(--page-background);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex-shrink: 0;
+  animation: gov-fade-in 0.15s ease;
+}
+
 
 .gov-detail-overlay-footer-inline {
   margin-top: 0.5rem;
@@ -1273,7 +1655,12 @@ body {
 }
 
 .gov-calc-debug-section {
-  padding-bottom: 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.gov-calc-debug-section:last-child {
+  border-bottom: none;
 }
 
 .gov-calc-debug-row {
@@ -1307,6 +1694,39 @@ body {
   font-size: 0.75rem;
   color: #fbbf24;
   padding-top: 0.35rem;
+}
+
+.gov-calc-debug-footer {
+  margin-top: 0.5rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius-s);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.gov-calc-debug-footer-headline {
+  font-family: var(--font-code), ui-monospace, monospace;
+  color: #38bdf8 !important;
+  margin-bottom: 0.35rem;
+}
+
+.gov-calc-debug-footer-label {
+  color: #fbbf24 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.65rem !important;
+}
+
+.gov-calc-debug-row--usage {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.12);
+}
+
+.gov-calc-debug-row--usage:last-child {
+  border-bottom: none;
+}
+
+.gov-calc-debug-row--usage .gov-calc-debug-result {
+  color: #4ade80;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1675,6 +2095,149 @@ body {
   position: relative;
 }
 
+/* Triage header: inline KPI strip */
+.gov-triage-header {
+  border: 1px solid var(--neutral-border-weak);
+  border-radius: var(--radius-l);
+  background: var(--page-background);
+  box-shadow: 0 1px 0 var(--neutral-alpha-weak);
+  overflow: hidden;
+}
+
+.gov-triage-stats-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  border-bottom: 1px solid var(--neutral-alpha-weak);
+  background: linear-gradient(
+    180deg,
+    rgba(56, 189, 248, 0.06) 0%,
+    transparent 100%
+  );
+}
+
+.gov-triage-stat {
+  flex: 1 1 7.5rem;
+  min-width: 6.5rem;
+  padding: 0.75rem 1rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  border-right: 1px solid var(--neutral-alpha-weak);
+}
+
+.gov-triage-stat:last-child {
+  border-right: none;
+}
+
+.gov-triage-stat-value {
+  font-size: 1.35rem;
+  line-height: 1.1;
+}
+
+.gov-triage-stat-label {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.gov-triage-stat-hint {
+  opacity: 0.75;
+  font-size: 0.65rem;
+  line-height: 1.2;
+}
+
+.gov-triage-header-foot {
+  padding: 0.75rem 1rem;
+  gap: 0.75rem;
+}
+
+.gov-triage-ai-role-inline {
+  flex: 1 1 14rem;
+  min-width: 0;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.gov-triage-session-pills {
+  flex-shrink: 0;
+}
+
+.gov-triage-session-pill {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--neutral-on-background-weak);
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--neutral-alpha-weak);
+  background: var(--neutral-background-weak);
+  white-space: nowrap;
+}
+
+.gov-triage-session-pill strong {
+  font-weight: 700;
+  color: var(--neutral-on-background-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+.gov-triage-live-pill--header {
+  margin-right: 0.15rem;
+}
+
+.gov-triage-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.gov-triage-panel-matrix,
+.gov-triage-panel-review {
+  min-height: 22rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.gov-triage-panel-matrix .gov-panel,
+.gov-triage-panel-review .gov-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.gov-triage-panel-matrix [data-column]:last-child,
+.gov-triage-panel-review [data-column]:last-child {
+  flex: 1;
+}
+
+@media (max-width: 1100px) {
+  .gov-triage-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gov-triage-stat {
+    flex: 1 1 calc(33.333% - 1px);
+    border-bottom: 1px solid var(--neutral-alpha-weak);
+  }
+
+  .gov-triage-stat:nth-child(3n) {
+    border-right: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .gov-triage-stat {
+    flex: 1 1 calc(50% - 1px);
+  }
+
+  .gov-triage-stat:nth-child(3n) {
+    border-right: 1px solid var(--neutral-alpha-weak);
+  }
+
+  .gov-triage-stat:nth-child(2n) {
+    border-right: none;
+  }
+}
+
 .gov-dash-stat {
   min-height: 5.5rem;
 }
@@ -1799,46 +2362,84 @@ body {
 }
 
 .gov-ai-workbench {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(11rem, 16rem);
-  gap: 1rem;
-  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
+  height: 100%;
+  flex: 1;
+}
+
+.gov-ai-workbench--stacked {
   min-height: 20rem;
 }
 
-@media (max-width: 900px) {
-  .gov-ai-workbench {
-    grid-template-columns: 1fr;
-  }
+.gov-ai-workbench-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-.gov-ai-workbench-left {
+.gov-ai-workbench-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
   min-width: 0;
 }
 
-.gov-ai-workbench-right {
+.gov-ai-workbench-body--live {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.gov-ai-workbench-body--live .gov-workbench-activity {
+  margin-top: 0;
+}
+
+.gov-ai-workbench-narrative {
+  min-width: 0;
+}
+
+.gov-ai-workbench-narrative .gov-ai-narrative {
+  margin: 0;
+}
+
+.gov-ai-workbench-feed-zone {
+  flex-shrink: 0;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--neutral-alpha-weak);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  min-width: 0;
-  border-left: 1px solid var(--neutral-alpha-weak);
-  padding-left: 0.85rem;
 }
 
-@media (max-width: 900px) {
-  .gov-ai-workbench-right {
-    border-left: none;
-    padding-left: 0;
-    border-top: 1px solid var(--neutral-alpha-weak);
-    padding-top: 0.85rem;
-  }
+.gov-ai-workbench-feed-head {
+  padding: 0 0.1rem;
+}
+
+.gov-ai-forming-score--head {
+  flex-shrink: 0;
+  margin: 0;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.gov-triage-panel-review > *:last-child {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .gov-ai-analysis-card {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  min-height: 18rem;
+  flex: 1;
+  min-height: 0;
   padding: 1rem 1.1rem;
   border-radius: var(--radius-m);
   border: 1px solid var(--neutral-alpha-weak);
@@ -1917,8 +2518,46 @@ body {
 
 .gov-ai-analysis-card--live {
   border-color: rgba(56, 189, 248, 0.45);
-  background: linear-gradient(165deg, rgba(56, 189, 248, 0.1) 0%, var(--neutral-weak) 45%);
+  background: var(--neutral-weak);
   box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.12);
+}
+
+/* Calmer AI triage workspace: less motion, slightly slower feel */
+.gov-ai-triage-workspace .gov-ai-orb,
+.gov-ai-triage-workspace .gov-ai-orb--active {
+  animation: none;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.22);
+}
+
+.gov-ai-triage-workspace .gov-feed-chip {
+  animation: none;
+}
+
+.gov-ai-triage-workspace .gov-ranked-row--promote {
+  animation: none;
+  border-color: rgba(74, 222, 128, 0.35);
+}
+
+.gov-ai-triage-workspace .gov-ranked-row--demote,
+.gov-ai-triage-workspace .gov-ranked-row--suppress {
+  animation: none;
+}
+
+.gov-ai-triage-workspace .gov-discarded-chip {
+  animation: none;
+}
+
+.gov-ai-triage-workspace .gov-triage-live-pill {
+  animation: none;
+}
+
+.gov-ai-triage-workspace .gov-ai-cursor {
+  animation: gov-ai-blink 1.35s step-end infinite;
+}
+
+.gov-ai-triage-workspace .gov-ai-narrative-thinking .gov-ai-orb {
+  animation: none;
+  opacity: 0.85;
 }
 
 .gov-ai-analysis-head {
@@ -2049,6 +2688,13 @@ body {
   background: var(--neutral-weak);
 }
 
+.gov-triage-matrix {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .gov-ai-stream-line {
   margin: 0;
   padding: 0.15rem 0;
@@ -2089,6 +2735,27 @@ body {
 
 .gov-feed-strip--compact.gov-feed-strip--empty {
   padding: 0.5rem;
+}
+
+.gov-feed-strip--horizontal .gov-feed-strip-track {
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-height: none;
+  gap: 0.5rem;
+  padding-bottom: 0.35rem;
+  scroll-snap-type: x proximity;
+}
+
+.gov-feed-strip--horizontal .gov-feed-chip--compact {
+  width: min(13.5rem, 72vw);
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+.gov-feed-strip--horizontal.gov-feed-strip--empty {
+  padding: 0.65rem 1rem;
+  text-align: left;
 }
 
 .gov-feed-chip--compact {

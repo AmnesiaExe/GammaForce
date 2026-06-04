@@ -100,11 +100,11 @@ export function buildWorkbenchAnalysisLines(ctx: WorkbenchTriageContext): string
   ];
   if (ctx.isNoise) {
     lines.push(
-      "Duplicate and low-value checks: likely vendor repost or out-of-scope · candidate for filtered queue.",
+      "Duplicate bulletin check: matches an item already in the WASOC queue · candidate for filtered list.",
     );
   } else {
     lines.push(
-      "Duplicate and false-positive pass: no blocking match · proceeding to ranked queue.",
+      "Duplicate check: no match to an open queue item · proceeding to ranked queue.",
     );
   }
   lines.push("Allocating slot in the prioritised WASOC queue.");

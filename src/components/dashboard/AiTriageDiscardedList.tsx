@@ -7,9 +7,7 @@ import { severityTagVariant } from "@/lib/scoring";
 function reasonTag(reason: string): { label: string; variant: "neutral" | "warning" | "danger" } {
   const r = reason.toLowerCase();
   if (r.includes("duplicate")) return { label: "Duplicate", variant: "warning" };
-  if (r.includes("false") || r.includes("out of scope")) return { label: "Low value", variant: "neutral" };
-  if (r.includes("hygiene") || r.includes("low value")) return { label: "Low value", variant: "neutral" };
-  return { label: "Filtered", variant: "neutral" };
+  return { label: "Duplicate", variant: "warning" };
 }
 
 interface AiTriageDiscardedListProps {

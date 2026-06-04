@@ -1,6 +1,7 @@
 "use client";
 
 import { Column, Flex, Heading, Line, Row, Tag, Text } from "@once-ui-system/core";
+import { EisenhowerMatrix } from "@/components/dashboard/EisenhowerMatrix";
 import { Panel } from "@/components/dashboard/Panel";
 import { PRIORITY_WEIGHTS } from "@/lib/prioritisation";
 import { AlertItem } from "@/lib/scoring";
@@ -82,6 +83,8 @@ export function PriorityBreakdownPanel({ alert }: { alert: AlertItem }) {
               accent="#38bdf8"
             />
           </Row>
+
+          <EisenhowerMatrix alert={alert} embedded />
 
           <Column gap="8" padding="20" radius="m" border="neutral-alpha-weak" fillWidth className="gov-priority-hero">
             <Text variant="label-default-xs" onBackground="brand-weak">
